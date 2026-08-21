@@ -44,7 +44,7 @@ Many neighborhood mom-and-pop stores lack:
 2. The financial resources to manage individual hosting, payment gateways, and databases.
 3. A centralized platform to compete with national retail giants.
 
-**Our Solution:** A multi-tenant shared marketplace where vendors get instant access to storefront management, payment collection via Stripe, and cloud media handling via Cloudinary.
+**Our Solution:** A multi-tenant shared marketplace where vendors get instant access to storefront management, payment collection via Razorpay, and cloud media handling via Cloudinary.
 
 ---
 
@@ -53,7 +53,7 @@ Many neighborhood mom-and-pop stores lack:
 ### 1. Customer Experience
 - **Browsing & Search:** Dynamic product discovery with advanced filtering (price, category, ratings).
 - **Cart & Wishlist:** Manage purchase items and list favorites before checkout.
-- **Secure Checkout:** Integrates Stripe checkout with automated webhook status synchronization.
+- **Secure Checkout:** Integrates Razorpay checkout with automated webhook status synchronization.
 - **Product Reviews:** Restrict reviews exclusively to customers with a verified `DELIVERED` purchase.
 
 ### 2. Vendor Portal
@@ -79,7 +79,7 @@ Many neighborhood mom-and-pop stores lack:
 | **Database ORM** | [Prisma](https://www.prisma.io/) |
 | **Database Engine** | [Supabase PostgreSQL](https://supabase.com/) |
 | **Authentication** | [Supabase Auth](https://supabase.com/auth) |
-| **Payment Gateway** | [Stripe (Test Mode)](https://stripe.com/) |
+| **Payment Gateway** | [Razorpay (Test Mode)](https://razorpay.com/) |
 | **Media Host** | [Cloudinary](https://cloudinary.com/) |
 | **Testing** | [Jest](https://jestjs.io/) + [Supertest](https://github.com/ladjs/supertest) |
 
@@ -93,12 +93,12 @@ Vendor Client  ───►  Cloudinary Client  ───►  Express Backend  �
 (Select Image)       (File Upload)            (Store Cloud URL)     (Product Saved)
 ```
 
-### Stripe Checkout & Webhook Flow
+### Razorpay Checkout & Webhook Flow
 ```text
-Customer Checkout  ───►  Create Stripe Session  ───►  Customer Pays (Stripe Checkout)
+Customer Checkout  ───►  Create Razorpay Order  ───►  Customer Pays (Razorpay Checkout UI)
                                                                   │
                                                                   ▼
-Supabase Update   ◄───  Reduce Inventory       ◄───  Stripe Webhook Event (Confirmed)
+Supabase Update   ◄───  Reduce Inventory       ◄───  Razorpay Webhook Event (payment.captured)
 ```
 
 ---
@@ -111,12 +111,12 @@ d:\Multi-Vendor-eCommerce
 ├───apps
 │   ├───api                      # Express API Gateway
 │   │   └───src
-│   │       ├───config           # Third-party configurations (Stripe, Prisma, Cloudinary)
+│   │       ├───config           # Third-party configurations (Razorpay, Prisma, Cloudinary)
 │   │       ├───controllers      # Business logic execution handlers
 │   │       ├───middlewares      # JWT validation & RBAC security checkers
 │   │       ├───routes           # REST routers mapped to path prefixes
 │   │       ├───schemas          # Zod query & body request validation models
-│   │       ├───services         # Stripe & Cloudinary API clients
+│   │       ├───services         # Razorpay & Cloudinary API clients
 │   │       ├───types            # Server typing specifications
 │   │       └───utils            # Logging and general helpers
 │   └───web                      # Next.js App Router Client
@@ -197,9 +197,10 @@ CLOUDINARY_CLOUD_NAME="your-cloud-name"
 CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
 
-# Stripe Payments
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
+# Razorpay Payments
+RAZORPAY_KEY_ID="rzp_test_..."
+RAZORPAY_KEY_SECRET="your-key-secret"
+RAZORPAY_WEBHOOK_SECRET="your-webhook-secret"
 ```
 
 ### Frontend (`apps/web/.env`)
@@ -210,8 +211,8 @@ NEXT_PUBLIC_API_URL="http://localhost:5000/api"
 NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 
-# Stripe Public Key
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+# Razorpay Key ID (Public)
+NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_..."
 ```
 
 ---
@@ -244,8 +245,8 @@ All backend requests map under the prefix `/api`:
 | | `/api/products` | `POST` | Vendor | Create new product listing (vendor-scoped) |
 | | `/api/products/:id` | `PUT` | Vendor | Update product information (vendor-scoped) |
 | **Cart** | `/api/cart` | `GET` | Customer | Fetch current items in cart |
-| **Payments**| `/api/payments/checkout`| `POST` | Customer | Create Stripe checkout session |
-| | `/api/payments/webhook` | `POST` | Stripe | Webhook verifying payment success |
+| **Payments**| `/api/payments/order`| `POST` | Customer | Create Razorpay order |
+| | `/api/payments/webhook` | `POST` | Razorpay | Webhook verifying payment success (payment.captured) |
 | **Reviews**  | `/api/reviews` | `POST` | Customer | Submit product review (requires verification) |
 | **Admin** | `/api/admin/vendors` | `PATCH` | Admin | Approve or reject vendor profiles |
 
@@ -265,7 +266,7 @@ npm run test:e2e --workspace=tests
 
 ### Core Tests Executed:
 1. **RBAC Rules Verification:** Test that a Vendor cannot alter another vendor's products, and customers cannot access admin paths.
-2. **Checkout Logic Validation:** Mock checkout session responses and check that Stripe transactions execute correctly.
+2. **Checkout Logic Validation:** Mock Razorpay order creation and check that webhook verification executes correctly.
 3. **Review Guard Testing:** Assert that attempts to post reviews on unpurchased products fail with `403 Forbidden`.
 
 ---
@@ -281,7 +282,7 @@ main   ────────────────────────�
         ▲
         ├── feature/customer-portal  ────
         ├── feature/vendor-dashboard  ───┤ (Local Feature Branches)
-        └── feature/payment-stripe   ────
+        └── feature/payment-razorpay   ────
 ```
 
 - **Branch Naming**: `feature/your-feature`, `bugfix/issue-description`.
@@ -301,7 +302,7 @@ main   ────────────────────────�
 ## 🔒 Security Considerations
 
 1. **Strict Backend Middleware (RBAC):** Token validation occurs backend-side. Next.js routers do not authorize database mutations directly.
-2. **Environment Confidentiality:** Secret variables (`STRIPE_SECRET_KEY`, database credentials) are stored securely on the hosting platforms and never sent to the client side.
+2. **Environment Confidentiality:** Secret variables (`RAZORPAY_KEY_SECRET`, database credentials) are stored securely on the hosting platforms and never sent to the client side.
 3. **SQL Injection & Validation Prevention:** Handled by Prisma query sanitization and backend Zod type constraints.
 
 ---
@@ -323,7 +324,7 @@ This marketplace is built as a collaborative university project:
 - **Member 1 (Customer Portal)**: Customer UI, Product discovery page, profile management.
 - **Member 2 (Vendor Portal)**: Merchant application forms, vendor dashboard, item CRUD, Cloudinary integration.
 - **Member 3 (Cart & Orders)**: Cart flows, address forms, purchase history, order tracker, product reviews.
-- **Member 4 (Backend & Stripe Integration)**: Server architecture, DB schema creation, stripe validation webhooks.
+- **Member 4 (Backend & Razorpay Integration)**: Server architecture, DB schema creation, Razorpay verification webhooks.
 - **Member 5 (Super Admin Portal)**: Admin analytics panels, user moderation tables, category controls.
 
 ---

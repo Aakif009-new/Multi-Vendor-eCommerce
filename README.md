@@ -146,95 +146,69 @@ d:\Multi-Vendor-eCommerce
 
 ---
 
-## 🐳 Docker & Local Development
+---
 
-We support containerized development via **Docker Compose**. This ensures that the application runs in a consistent environment with all node packages and local settings matching production, without requiring you to install Node.js, TypeScript, or other package engines on your host machine.
+## 🚀 Local Development Quick Start
+
+The application runs in local development mode using Node.js and npm workspaces. Both the backend API and frontend client start concurrently with a single command.
 
 ### 📋 Prerequisites
-Before launching the application, ensure you have installed:
+Before launching the application, ensure you have:
 - [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (v20.10+ / Compose v2.0+)
+- [Node.js (v18+)](https://nodejs.org/)
 - Accounts and API credentials for our external services: **Supabase** (auth and DB), **Cloudinary** (image storage), and **Razorpay** (payment gateway).
 
 ### 🚀 Quick Start
-Follow these commands to clone, configure, and start the application in containerized mode:
+Follow these steps to clone, install, configure, and start the application:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/your-org/Multi-Vendor-eCommerce.git
 cd Multi-Vendor-eCommerce
 
-# 2. Configure Environment Variables
+# 2. Install Workspace Dependencies
+# Installs dependencies for Express backend, Next.js frontend, and concurrently package
+npm install
+
+# 3. Configure Environment Variables
 # Copy the templates and fill out your credentials in the created files
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 
-# 3. Spin up the containers (builds images on first run)
-docker compose up --build
+# 4. Start both applications concurrently
+npm run dev
 ```
-Once execution finishes:
-- The **Frontend** client will be live at: [http://localhost:3000](http://localhost:3000)
-- The **Backend API** will be live at: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
-### 🔑 Environment Configuration
-The `.env.example` templates represent configuration variables. Real secrets (e.g., `RAZORPAY_KEY_SECRET`, `CLOUDINARY_API_SECRET`) must only be placed in your local `apps/api/.env` and `apps/web/.env` files. These files are excluded from git history by `.gitignore` and are loaded directly into the Docker containers at startup.
+Once running:
+- The **Frontend Next.js Client** is active at: [http://localhost:3000](http://localhost:3000)
+- The **Backend Express API** is active at: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
-### 🏗️ Docker Architecture
+### 🏗️ Architecture & Flow
 ```text
   [ Client Browser ]
           │ (localhost:3000)
           ▼
-   Next.js Container (web)
+   Next.js Client (web)
           │
           │ (localhost:5000/api)
           ▼
-   Express Container (api) ────► Prisma ────► Supabase PostgreSQL (Cloud)
+   Express API Server (api) ────► Prisma ────► Supabase PostgreSQL (Cloud)
           │                                 (Database Service)
           ├─────────────────────────────────► Supabase Auth (Cloud)
           ├─────────────────────────────────► Cloudinary Service (Cloud)
           └─────────────────────────────────► Razorpay Sandbox (Cloud)
 ```
-- **Hot-Reloading:** The source folders (`apps/api` and `apps/web`) are mounted as active volumes. Any change you save on your host IDE automatically triggers re-compilation inside the running container.
-- **Port mapping:** Frontend container maps internally to port `3000`; backend container maps to port `5000`.
-
-### 🛠️ Useful Docker Commands
-Run these in the project root directory:
-
-* **Build and Start (re-evaluates changes to Dockerfile/package.json):**
-  ```bash
-  docker compose up --build
-  ```
-* **Run in background (detached mode):**
-  ```bash
-  docker compose up -d
-  ```
-* **Stop running containers:**
-  ```bash
-  docker compose down
-  ```
-* **View logs (add `-f` to follow stream):**
-  ```bash
-  docker compose logs api
-  docker compose logs web
-  ```
-* **Show running services status:**
-  ```bash
-  docker compose ps
-  ```
 
 ### 🔍 Troubleshooting
 
 1. **Port Already Allocated (`address already in use`):**
-   - **Issue:** Another process is running on port `3000` or `5000` on your host machine.
-   - **Fix:** Stop any local running Express/Next instances, or release ports using:
+   - **Issue:** Another process is running on port `3000` or `5000` on your machine.
+   - **Fix:** Kill the process running on that port.
      - Windows: `Stop-Process -Id (Get-NetTCPConnection -LocalPort 5000).OwningProcess -Force`
      - macOS/Linux: `kill -9 $(lsof -t -i:5000)`
-2. **Missing Dependencies on Local IDE:**
-   - **Issue:** IDE highlights lint/import errors because node_modules are only installed inside the containers.
-   - **Fix:** Run `npm install` once locally at the workspace root to cache type definitions for your IDE.
-3. **Database connection failures:**
-   - **Issue:** Container cannot reach your Supabase PostgreSQL connection.
-   - **Fix:** Ensure the `DATABASE_URL` in your backend `.env` file is correct and doesn't block incoming IPs (check Supabase DB network access rules).
+2. **TypeScript / IDE Errors:**
+   - **Issue:** Visual Studio Code or other editors show missing module errors for packages (like React).
+   - **Fix:** Running `npm install` at the root directory of the workspace restores local packages and caches the type declarations correctly for your IDE.
 
 
 ---

@@ -14,9 +14,9 @@
 - [Technology Stack](#-technology-stack)
 - [Architecture & Design Flow](#-architecture--design-flow)
 - [Project Directory Structure](#-project-directory-structure)
-- [Installation & Setup](#-installation--setup)
+- [Local Development Quick Start](#-local-development-quick-start)
 - [Environment Variables](#-environment-variables)
-- [Database Schema & Migrations](#-database-schema--migrations)
+- [Database Schema & Seed](#-database-schema--seed)
 - [API Route Reference](#-api-route-reference)
 - [Testing Strategy](#-testing-strategy)
 - [Git Workflow](#-git-workflow)
@@ -31,6 +31,8 @@
 ## 🌟 Project Overview
 
 This platform functions as a shared digital marketplace inspired by services like Amazon and Flipkart, but tailored for local shop owners. The system enforces strict Role-Based Access Control (RBAC) across three primary actors: **Customers**, **Vendors**, and a **Super Admin**.
+
+All transactional and catalog assets are stored in a fully-managed **MongoDB Atlas** cloud database, mapped via the **Prisma ORM**. Security is managed locally via **JWT (JSON Web Tokens)** session authentication and password encryption via **bcrypt**.
 
 ### Key Value Proposition
 > *"Bridging the physical-to-digital gap for neighborhood retailers by providing an all-in-one storefront, order tracking, and payment processing suite."*
@@ -76,9 +78,9 @@ Many neighborhood mom-and-pop stores lack:
 | **Frontend Framework** | [Next.js (App Router)](https://nextjs.org/) + TypeScript |
 | **Styling** | [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/) |
 | **Backend API** | [Node.js](https://nodejs.org/) + [Express.js](https://expressjs.com/) + TypeScript |
-| **Database ORM** | [Prisma](https://www.prisma.io/) |
-| **Database Engine** | [Supabase PostgreSQL](https://supabase.com/) |
-| **Authentication** | [Supabase Auth](https://supabase.com/auth) |
+| **Database ORM** | [Prisma with MongoDB Connector](https://www.prisma.io/) |
+| **Database Engine** | [MongoDB Atlas](https://www.mongodb.com/atlas/database) |
+| **Authentication** | [JWT Authentication](https://jwt.io/) + Password Hashing via [bcrypt](https://github.com/kelektiv/node.bcrypt.js) |
 | **Payment Gateway** | [Razorpay (Test Mode)](https://razorpay.com/) |
 | **Media Host** | [Cloudinary](https://cloudinary.com/) |
 | **Testing** | [Jest](https://jestjs.io/) + [Supertest](https://github.com/ladjs/supertest) |
@@ -87,18 +89,26 @@ Many neighborhood mom-and-pop stores lack:
 
 ## 🏗️ Architecture & Design Flow
 
-### Image Upload Flow
+### 1. User Authentication (JWT + bcrypt)
 ```text
-Vendor Client  ───►  Cloudinary Client  ───►  Express Backend  ───►  Supabase PostgreSQL
+User Signup/Login  ───►  Express API (bcrypt verify)  ───►  Generate signed JWT
+                                                                   │
+                                                                   ▼
+Return Client Cookie  ◄───  Authorize VENDOR / ADMIN  ◄───  Read payload role
+```
+
+### 2. Image Upload Flow
+```text
+Vendor Client  ───►  Cloudinary Client  ───►  Express Backend  ───►  MongoDB Atlas
 (Select Image)       (File Upload)            (Store Cloud URL)     (Product Saved)
 ```
 
-### Razorpay Checkout & Webhook Flow
+### 3. Razorpay Checkout & Webhook Flow
 ```text
 Customer Checkout  ───►  Create Razorpay Order  ───►  Customer Pays (Razorpay Checkout UI)
                                                                   │
                                                                   ▼
-Supabase Update   ◄───  Reduce Inventory       ◄───  Razorpay Webhook Event (payment.captured)
+MongoDB Update     ◄───  Reduce Inventory       ◄───  Razorpay Webhook Event (payment.captured)
 ```
 
 ---
@@ -112,7 +122,7 @@ d:\Multi-Vendor-eCommerce
 │   ├───api                      # Express API Gateway
 │   │   └───src
 │   │       ├───config           # Third-party configurations (Razorpay, Prisma, Cloudinary)
-│   │       ├───controllers      # Business logic execution handlers
+│   │       ├───controllers      # Express route controllers containing business logic
 │   │       ├───middlewares      # JWT validation & RBAC security checkers
 │   │       ├───routes           # REST routers mapped to path prefixes
 │   │       ├───schemas          # Zod query & body request validation models
@@ -128,7 +138,7 @@ d:\Multi-Vendor-eCommerce
 │           │   └───(vendor)     # Store management dashboard for merchants
 │           ├───components       # Client/Server UI widgets
 │           ├───hooks            # Custom React hooks
-│           ├───lib              # Shared browser clients (Supabase API client)
+│           ├───lib              # Shared browser clients (API client configurations)
 │           ├───providers        # Global Contexts (CartProvider, AuthProvider)
 │           ├───services         # Fetch instances calling backend APIs
 │           ├───types            # Client state declarations
@@ -146,8 +156,6 @@ d:\Multi-Vendor-eCommerce
 
 ---
 
----
-
 ## 🚀 Local Development Quick Start
 
 The application runs in local development mode using Node.js and npm workspaces. Both the backend API and frontend client start concurrently with a single command.
@@ -156,7 +164,7 @@ The application runs in local development mode using Node.js and npm workspaces.
 Before launching the application, ensure you have:
 - [Git](https://git-scm.com/)
 - [Node.js (v18+)](https://nodejs.org/)
-- Accounts and API credentials for our external services: **Supabase** (auth and DB), **Cloudinary** (image storage), and **Razorpay** (payment gateway).
+- Accounts and API credentials for our external services: **MongoDB Atlas** (database), **Cloudinary** (image storage), and **Razorpay** (payment gateway).
 
 ### 🚀 Quick Start
 Follow these steps to clone, install, configure, and start the application:
@@ -192,9 +200,8 @@ Once running:
           │
           │ (localhost:5000/api)
           ▼
-   Express API Server (api) ────► Prisma ────► Supabase PostgreSQL (Cloud)
+   Express API Server (api) ────► Prisma ────► MongoDB Atlas (Cloud)
           │                                 (Database Service)
-          ├─────────────────────────────────► Supabase Auth (Cloud)
           ├─────────────────────────────────► Cloudinary Service (Cloud)
           └─────────────────────────────────► Razorpay Sandbox (Cloud)
 ```
@@ -210,7 +217,6 @@ Once running:
    - **Issue:** Visual Studio Code or other editors show missing module errors for packages (like React).
    - **Fix:** Running `npm install` at the root directory of the workspace restores local packages and caches the type declarations correctly for your IDE.
 
-
 ---
 
 ## 🔑 Environment Variables
@@ -218,11 +224,8 @@ Once running:
 ### Backend (`apps/api/.env`)
 ```env
 PORT=5000
-DATABASE_URL="postgresql://user:pass@db-host:5432/dbname?schema=public"
-
-# Supabase Auth
-SUPABASE_URL="https://your-project.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+DATABASE_URL="mongodb+srv://user:pass@cluster.mongodb.net/dbname?retryWrites=true&w=majority"
+JWT_SECRET="your-super-secure-jwt-secret-key"
 
 # Cloudinary Storage
 CLOUDINARY_CLOUD_NAME="your-cloud-name"
@@ -239,28 +242,21 @@ RAZORPAY_WEBHOOK_SECRET="your-webhook-secret"
 ```env
 NEXT_PUBLIC_API_URL="http://localhost:5000/api"
 
-# Supabase Client Credentials
-NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-
 # Razorpay Key ID (Public)
 NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_..."
 ```
 
 ---
 
-## 🗄️ Database Schema & Migrations
+## 🗄️ Database Schema & Seed
 
-Prisma ORM connects our code with the Supabase PostgreSQL database.
+Prisma ORM connects our code with the MongoDB Atlas database. Because MongoDB is schemaless, Prisma handles compilation to collections internally without requiring manual relational migrations.
 
 ```bash
 # Generate the Prisma Client
 npx prisma generate
 
-# Create and apply migration
-npx prisma migrate dev --name init
-
-# Seed initial database elements (categories, brands)
+# Seed initial database elements (categories, brands, products)
 npx prisma db seed
 ```
 
@@ -273,6 +269,7 @@ All backend requests map under the prefix `/api`:
 | Module | Route | Method | Access | Description |
 | :--- | :--- | :--- | :--- | :--- |
 | **Auth** | `/api/auth/register` | `POST` | Public | Registers customer / requests vendor status |
+| | `/api/auth/login` | `POST` | Public | Log in, verifies password hash, returns JWT |
 | **Products** | `/api/products` | `GET` | Public | List and search products with query filters |
 | | `/api/products` | `POST` | Vendor | Create new product listing (vendor-scoped) |
 | | `/api/products/:id` | `PUT` | Vendor | Update product information (vendor-scoped) |
@@ -297,9 +294,10 @@ npm run test:e2e --workspace=tests
 ```
 
 ### Core Tests Executed:
-1. **RBAC Rules Verification:** Test that a Vendor cannot alter another vendor's products, and customers cannot access admin paths.
-2. **Checkout Logic Validation:** Mock Razorpay order creation and check that webhook verification executes correctly.
-3. **Review Guard Testing:** Assert that attempts to post reviews on unpurchased products fail with `403 Forbidden`.
+1. **JWT Auth Verification:** Test that protected routes block requests with invalid or missing tokens, and correctly decode the user role.
+2. **RBAC Rules Verification:** Test that a Vendor cannot alter another vendor's products, and customers cannot access admin paths.
+3. **Checkout Logic Validation:** Mock Razorpay order creation and check that webhook verification executes correctly.
+4. **Review Guard Testing:** Assert that attempts to post reviews on unpurchased products fail with `403 Forbidden`.
 
 ---
 
@@ -314,7 +312,7 @@ main   ────────────────────────�
         ▲
         ├── feature/customer-portal  ────
         ├── feature/vendor-dashboard  ───┤ (Local Feature Branches)
-        └── feature/payment-razorpay   ────
+        └── feature/payment-razorpay ────
 ```
 
 - **Branch Naming**: `feature/your-feature`, `bugfix/issue-description`.
@@ -325,8 +323,8 @@ main   ────────────────────────�
 ## 🌐 Deployment Plan
 
 - **Frontend Client**: Hosted on **Vercel** with Next.js environment configurations.
-- **Backend API**: Hosted on **Railway** or **Render** linking PostgreSQL variables.
-- **Database Engine**: Hosted in the cloud on **Supabase** instance.
+- **Backend API**: Hosted on **Railway** or **Render** linking MongoDB connection variables.
+- **Database Engine**: Hosted in the cloud on **MongoDB Atlas** cluster.
 - **Media Asset Storage**: Managed on **Cloudinary**.
 
 ---
@@ -334,8 +332,8 @@ main   ────────────────────────�
 ## 🔒 Security Considerations
 
 1. **Strict Backend Middleware (RBAC):** Token validation occurs backend-side. Next.js routers do not authorize database mutations directly.
-2. **Environment Confidentiality:** Secret variables (`RAZORPAY_KEY_SECRET`, database credentials) are stored securely on the hosting platforms and never sent to the client side.
-3. **SQL Injection & Validation Prevention:** Handled by Prisma query sanitization and backend Zod type constraints.
+2. **Password Encryption:** Passwords are never stored in plain text. They are hashed using `bcrypt` (with a work factor of 10) on user creation.
+3. **Environment Confidentiality:** Secret variables (`JWT_SECRET`, `RAZORPAY_KEY_SECRET`, `CLOUDINARY_API_SECRET`) are stored securely on the hosting platforms and never sent to the client side.
 
 ---
 

@@ -221,28 +221,28 @@ Once running:
 
 ## 🔑 Environment Variables
 
-### Backend (`apps/api/.env`)
+The project uses a **single unified `.env` file at the root of the workspace** (`d:\Multi-Vendor-eCommerce\.env`). The environment variables are loaded at startup via `dotenv-cli` and automatically shared with both frontend and backend processes.
+
+Create a `.env` file at the root and fill in your keys:
+
 ```env
 PORT=5000
 DATABASE_URL="mongodb+srv://user:pass@cluster.mongodb.net/dbname?retryWrites=true&w=majority"
 JWT_SECRET="your-super-secure-jwt-secret-key"
+PEXELS_API_KEY="your-pexels-api-key"
 
 # Cloudinary Storage
 CLOUDINARY_CLOUD_NAME="your-cloud-name"
 CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
 
-# Razorpay Payments
+# Razorpay Payments (Backend & Frontend)
 RAZORPAY_KEY_ID="rzp_test_..."
 RAZORPAY_KEY_SECRET="your-key-secret"
 RAZORPAY_WEBHOOK_SECRET="your-webhook-secret"
-```
 
-### Frontend (`apps/web/.env`)
-```env
+# Frontend Configuration
 NEXT_PUBLIC_API_URL="http://localhost:5000/api"
-
-# Razorpay Key ID (Public)
 NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_..."
 ```
 

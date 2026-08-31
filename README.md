@@ -179,31 +179,31 @@ cd Multi-Vendor-eCommerce
 npm install
 
 # 3. Configure Environment Variables
-# Copy the templates and fill out your credentials in the created files
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
+# Create .env at the project root and fill out your credentials
+cp .env.example .env
 
-# 4. Start both applications concurrently
+# 4. Start the application
 npm run dev
 ```
 
-Once running:
-- The **Frontend Next.js Client** is active at: [http://localhost:3000](http://localhost:3000)
-- The **Backend Express API** is active at: [http://localhost:5000/api/health](http://localhost:5000/api/health)
+Once running, **everything is accessible on port 3000**:
+- **Website & Customer Storefront:** [http://localhost:3000](http://localhost:3000)
+- **API Endpoints:** [http://localhost:3000/api/health](http://localhost:3000/api/health) (Proxied automatically from Express)
 
 ### 🏗️ Architecture & Flow
 ```text
-  [ Client Browser ]
-          │ (localhost:3000)
-          ▼
-   Next.js Client (web)
-          │
-          │ (localhost:5000/api)
-          ▼
-   Express API Server (api) ────► Prisma ────► MongoDB Atlas (Cloud)
-          │                                 (Database Service)
-          ├─────────────────────────────────► Cloudinary Service (Cloud)
-          └─────────────────────────────────► Razorpay Sandbox (Cloud)
+  [ Client Browser / Postman ]
+               │
+               ▼ (All requests to localhost:3000)
+       Next.js App Server
+         │            │
+  (UI Routes)     (/api/* Routes via Next.js Proxy)
+         │            │
+      Browser         ▼
+               Express API Server (api) ────► Prisma ────► MongoDB Atlas (Cloud)
+                      │                                 (Database Service)
+                      ├─────────────────────────────────► Cloudinary Service (Cloud)
+                      └─────────────────────────────────► Razorpay Sandbox (Cloud)
 ```
 
 ### 🔍 Troubleshooting
@@ -242,7 +242,7 @@ RAZORPAY_KEY_SECRET="your-key-secret"
 RAZORPAY_WEBHOOK_SECRET="your-webhook-secret"
 
 # Frontend Configuration
-NEXT_PUBLIC_API_URL="http://localhost:5000/api"
+NEXT_PUBLIC_API_URL="http://localhost:3000/api"
 NEXT_PUBLIC_RAZORPAY_KEY_ID="rzp_test_..."
 ```
 

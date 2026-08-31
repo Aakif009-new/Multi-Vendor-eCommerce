@@ -8,7 +8,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Client-side API fetch to verify frontend-backend communication
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
     fetch(`${apiUrl}/health`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -37,7 +37,7 @@ export default function HomePage() {
     }}>
       <h1 style={{ color: '#2563eb', margin: '0 0 1rem 0' }}>Multi-Vendor Marketplace</h1>
       <p style={{ color: '#475569', fontSize: '1.1rem' }}>
-        Welcome to the containerized development environment.
+        Welcome to the local development environment.
       </p>
       
       <div style={{

@@ -283,7 +283,7 @@ All backend requests map under the prefix `/api`:
 
 ## 🧪 Testing Strategy
 
-Automated tests check core business workflows before deployment:
+Automated tests check core business workflows before deployment:-
 
 ```bash
 # Run integration unit tests (Jest + Supertest)

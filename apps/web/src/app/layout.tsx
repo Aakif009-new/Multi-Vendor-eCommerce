@@ -1,8 +1,9 @@
 import React from 'react';
+import './globals.css';
 
 export const metadata = {
-  title: 'Multi-Vendor Marketplace',
-  description: 'Empowering local businesses through digital commerce',
+  title: 'BazaarOne — Multi-Vendor Marketplace for Local Businesses',
+  description: 'A modern, production-grade Multi-Vendor E-Commerce platform empowering local artisans and neighborhood shop owners.',
 };
 
 export default function RootLayout({
@@ -11,9 +12,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
-        <main>{children}</main>
+    <html lang="en" className="scroll-smooth">
+      <body className="min-h-screen flex flex-col bg-mesh text-surface-900 antialiased">
+        {children}
       </body>
     </html>
   );

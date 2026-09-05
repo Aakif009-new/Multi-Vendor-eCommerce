@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShoppingBag, Heart, Star, Store } from 'lucide-react';
+import { ShoppingBag, Heart, Star, Store, Check } from 'lucide-react';
 import { Product } from '@/types/marketplace';
-import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 
 export interface ProductCardProps {
@@ -23,6 +22,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isAddedRecently, setIsAddedRecently] = useState(false);
 
   const currentPrice = product.discountPrice ?? product.price;
   const hasDiscount = Boolean(product.discountPrice && product.discountPrice < product.price);
@@ -42,19 +42,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const ratingValue = product.rating && product.rating > 0 ? product.rating.toFixed(1) : '4.5';
   const reviewCount = product.numReviews && product.numReviews > 0 ? product.numReviews : null;
 
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddToCart && !isOutOfStock) {
+      onAddToCart(product);
+      setIsAddedRecently(true);
+      setTimeout(() => setIsAddedRecently(false), 1500);
+    }
+  };
+
   return (
-    <Card
-      variant="elevated"
-      className="group relative flex flex-col justify-between p-0 overflow-hidden border border-surface-200/80 hover:border-brand-500/40 hover:shadow-xl transition-all duration-300 rounded-3xl bg-white text-left h-full"
+    <div
+      onClick={() => onSelect(product)}
+      className="group relative flex flex-col justify-between bg-white rounded-2xl border border-surface-200/80 hover:border-surface-300 hover:shadow-card-hover transition-all duration-300 overflow-hidden cursor-pointer text-left h-full"
     >
-      {/* Top Aspect Square Image Container */}
-      <div
-        className="relative aspect-square w-full bg-surface-100/60 overflow-hidden cursor-pointer flex items-center justify-center"
-        onClick={() => onSelect(product)}
-      >
-        {/* Loading Skeleton */}
+      {/* 1. Image Container */}
+      <div className="relative aspect-square w-full bg-surface-50 overflow-hidden flex items-center justify-center">
+        {/* Placeholder skeleton */}
         {!isImageLoaded && !imageError && (
-          <div className="absolute inset-0 bg-surface-200/60 animate-pulse" />
+          <div className="absolute inset-0 bg-surface-100 animate-pulse" />
         )}
 
         {/* Product Image */}
@@ -72,25 +78,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           }`}
         />
 
-        {/* Floating Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
+        {/* Subtle Discount / Stock Chips */}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 z-10 pointer-events-none">
           {hasDiscount && (
-            <span className="px-2.5 py-1 rounded-xl bg-rose-600 text-white text-[10px] font-extrabold shadow-xs tracking-wide">
+            <span className="px-2 py-0.5 rounded-md bg-surface-900/90 text-white text-[10px] font-bold tracking-wide backdrop-blur-xs">
               {discountPercent}% OFF
             </span>
           )}
           {isOutOfStock ? (
-            <span className="px-2.5 py-1 rounded-xl bg-surface-950/90 text-white text-[10px] font-bold backdrop-blur-xs">
+            <span className="px-2 py-0.5 rounded-md bg-surface-950 text-white text-[10px] font-bold">
               Out of Stock
             </span>
           ) : isLowStock ? (
-            <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-white text-[10px] font-bold shadow-xs">
+            <span className="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold">
               Only {product.stock} left
             </span>
           ) : null}
         </div>
 
-        {/* Wishlist Button */}
+        {/* Wishlist Icon Button */}
         {onAddToWishlist && (
           <button
             type="button"
@@ -98,66 +104,61 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               e.stopPropagation();
               onAddToWishlist(product);
             }}
-            aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-            className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white text-surface-600 hover:text-rose-500 shadow-md backdrop-blur-xs transition-all duration-200 z-10 cursor-pointer"
+            aria-label={isInWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
+            className="absolute top-2.5 right-2.5 p-2 rounded-full bg-white/90 hover:bg-white text-surface-600 hover:text-rose-500 shadow-xs backdrop-blur-xs transition-all duration-200 z-10"
             title="Save to Wishlist"
           >
             <Heart
               className={`h-4 w-4 transition-colors ${
-                isInWishlist ? 'fill-rose-500 text-rose-500' : 'text-surface-600'
+                isInWishlist ? 'fill-rose-500 text-rose-500' : 'text-surface-500 hover:text-rose-500'
               }`}
             />
           </button>
         )}
       </div>
 
-      {/* Card Body */}
+      {/* 2. Card Details Body */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
         <div className="space-y-1.5">
-          {/* Category & Merchant Tag */}
+          {/* Category & Merchant Row */}
           <div className="flex items-center justify-between text-[11px] text-surface-500">
-            <span className="font-bold text-brand-600 uppercase tracking-wider truncate max-w-[110px]">
-              {product.category?.name || 'Handcrafted'}
+            <span className="font-semibold uppercase tracking-wider text-surface-500 truncate max-w-[100px]">
+              {product.category?.name || 'Category'}
             </span>
             {product.vendor && (
               <span
-                className="flex items-center gap-1 font-medium text-surface-600 truncate max-w-[125px]"
-                title={`Sold by: ${product.vendor.businessName}`}
+                className="flex items-center gap-1 text-surface-500 truncate max-w-[130px]"
+                title={`Store: ${product.vendor.businessName}`}
               >
-                <Store className="h-3 w-3 text-amber-500 shrink-0" />
-                <span className="truncate">Sold by: {product.vendor.businessName}</span>
+                <Store className="h-3 w-3 text-surface-400 shrink-0" />
+                <span className="truncate">{product.vendor.businessName}</span>
               </span>
             )}
           </div>
 
-          {/* Product Title (Consistent 2-Line Height) */}
+          {/* Product Title */}
           <h4
-            onClick={() => onSelect(product)}
             title={product.name}
-            className="h-10 text-xs sm:text-sm font-bold text-surface-900 line-clamp-2 hover:text-brand-600 cursor-pointer transition-colors leading-snug"
+            className="h-10 text-xs sm:text-sm font-semibold text-surface-900 line-clamp-2 group-hover:text-brand-600 transition-colors leading-snug"
           >
             {product.name}
           </h4>
 
-          {/* Rating Row */}
+          {/* Star Rating & Review Count */}
           <div className="flex items-center gap-1.5 text-xs">
             <div className="flex items-center text-amber-500">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span className="ml-1 font-extrabold text-surface-900 text-xs">
-                {ratingValue}
-              </span>
+              <span className="ml-1 font-bold text-surface-900 text-xs">{ratingValue}</span>
             </div>
             {reviewCount !== null && (
-              <span className="text-[11px] text-surface-400">
-                ({reviewCount} reviews)
-              </span>
+              <span className="text-[11px] text-surface-400 font-medium">({reviewCount})</span>
             )}
           </div>
 
           {/* Price & Savings Display */}
-          <div className="pt-1">
+          <div className="pt-0.5">
             <div className="flex items-baseline gap-2">
-              <span className="text-base sm:text-lg font-black text-surface-950">
+              <span className="text-base sm:text-lg font-bold text-surface-950">
                 ₹{currentPrice.toLocaleString('en-IN')}
               </span>
               {hasDiscount && (
@@ -167,49 +168,53 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               )}
             </div>
             {hasDiscount && (
-              <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
-                Save ₹{savingsAmount.toLocaleString('en-IN')} ({discountPercent}% off)
+              <div className="text-[10px] font-semibold text-emerald-600 mt-0.5">
+                Save ₹{savingsAmount.toLocaleString('en-IN')}
               </div>
             )}
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* 3. Add to Cart Button */}
         <div className="pt-2 border-t border-surface-100">
           <Button
-            variant={isOutOfStock ? 'outline' : 'primary'}
+            variant={isAddedRecently ? 'secondary' : isOutOfStock ? 'outline' : 'primary'}
             size="sm"
-            className="w-full h-9 text-xs font-bold rounded-xl"
+            className="w-full h-8 text-xs font-semibold rounded-lg transition-all"
             disabled={isOutOfStock}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onAddToCart) onAddToCart(product);
-            }}
-            leftIcon={<ShoppingBag className="h-3.5 w-3.5" />}
+            onClick={handleAddToCartClick}
+            leftIcon={
+              isAddedRecently ? (
+                <Check className="h-3.5 w-3.5 text-emerald-400" />
+              ) : (
+                <ShoppingBag className="h-3.5 w-3.5" />
+              )
+            }
           >
-            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+            {isAddedRecently ? 'Added to Cart' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 
 export const ProductCardSkeleton: React.FC = () => (
-  <div className="flex flex-col justify-between p-0 overflow-hidden border border-surface-200/80 rounded-3xl bg-white text-left h-full animate-pulse shadow-xs">
-    <div className="aspect-square w-full bg-surface-200/60" />
-    <div className="p-4 space-y-3">
+  <div className="flex flex-col justify-between bg-white rounded-2xl border border-surface-200/80 overflow-hidden h-full animate-pulse text-left shadow-xs">
+    <div className="aspect-square w-full bg-surface-100" />
+    <div className="p-4 space-y-2.5">
       <div className="flex justify-between items-center">
-        <div className="h-3 w-16 bg-surface-200 rounded-md" />
-        <div className="h-3 w-20 bg-surface-200 rounded-md" />
+        <div className="h-2.5 w-16 bg-surface-200 rounded" />
+        <div className="h-2.5 w-20 bg-surface-200 rounded" />
       </div>
-      <div className="h-4 w-full bg-surface-200 rounded-md" />
-      <div className="h-4 w-3/4 bg-surface-200 rounded-md" />
-      <div className="h-3 w-12 bg-surface-200 rounded-md" />
-      <div className="h-6 w-24 bg-surface-200 rounded-md" />
+      <div className="h-3.5 w-full bg-surface-200 rounded" />
+      <div className="h-3.5 w-3/4 bg-surface-200 rounded" />
+      <div className="h-3 w-12 bg-surface-200 rounded" />
+      <div className="h-5 w-24 bg-surface-200 rounded" />
       <div className="pt-2 border-t border-surface-100">
-        <div className="h-9 w-full bg-surface-200 rounded-xl" />
+        <div className="h-8 w-full bg-surface-200 rounded-lg" />
       </div>
     </div>
   </div>
 );
+

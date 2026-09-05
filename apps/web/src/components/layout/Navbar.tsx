@@ -7,20 +7,17 @@ import {
   Search,
   User,
   Store,
-  ShieldCheck,
+  Shield,
   Menu,
   X,
-  Sparkles,
   Heart,
   MapPin,
-  Shield,
-  Layers,
   Package,
   LogOut,
-  ChevronDown,
+  Sparkles,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 
 export interface NavbarProps {
   userRole?: 'CUSTOMER' | 'VENDOR' | 'ADMIN' | null;
@@ -39,7 +36,26 @@ export interface NavbarProps {
   onOpenVendorApply?: () => void;
   onOpenAuthModal?: () => void;
   onLogout?: () => void;
+  search?: string;
+  onSearchChange?: (value: string) => void;
+  selectedCategory?: string;
+  onSelectCategory?: (slug: string) => void;
 }
+
+const CANONICAL_CATEGORIES = [
+  { name: 'All Categories', slug: '' },
+  { name: 'Electronics', slug: 'electronics' },
+  { name: 'Computers', slug: 'computers' },
+  { name: 'Fashion', slug: 'fashion' },
+  { name: 'Home & Kitchen', slug: 'home-kitchen' },
+  { name: 'Beauty', slug: 'beauty' },
+  { name: 'Grocery', slug: 'grocery' },
+  { name: 'Sports & Fitness', slug: 'sports-fitness' },
+  { name: 'Books', slug: 'books' },
+  { name: 'Toys & Games', slug: 'toys-games' },
+  { name: 'Automotive', slug: 'automotive' },
+  { name: 'Mobile Accessories', slug: 'mobile-accessories' },
+];
 
 export const Navbar: React.FC<NavbarProps> = ({
   userRole = null,
@@ -58,180 +74,137 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenVendorApply,
   onOpenAuthModal,
   onLogout,
+  search = '',
+  onSearchChange,
+  selectedCategory = '',
+  onSelectCategory,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const handleCategoryClick = (slug: string) => {
+    if (onSelectCategory) {
+      onSelectCategory(slug);
+    }
+    const el = document.getElementById('catalog-section');
+    el?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full glass border-b border-surface-200/80 shadow-xs">
-      {/* Top Banner with Active Persona Indicator */}
-      <div className="bg-gradient-to-r from-surface-950 via-brand-950 to-surface-900 text-white text-[11px] font-medium py-1.5 px-4 text-center">
-        <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-accent-gold animate-pulse" />
-            <span className="hidden sm:inline">
-              BazaarOne Verified Multi-Vendor Marketplace &bull; Indian Handcrafted & Consumer Goods
-            </span>
-            <span className="sm:hidden">BazaarOne Marketplace</span>
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-surface-200/70 transition-all">
+      {/* 1. Subtle Utility Topbar */}
+      <div className="border-b border-surface-100 bg-surface-50/80 text-[11px] text-surface-600 py-1.5 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span>Curated products &bull; Trusted independent merchants</span>
           </div>
 
-          {/* Authenticated Role Status Tag */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {userRole ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-bold">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    userRole === 'ADMIN'
-                      ? 'bg-purple-400'
-                      : userRole === 'VENDOR'
-                      ? 'bg-amber-400'
-                      : 'bg-emerald-400'
-                  }`}
-                />
-                Signed in as {userRole} ({userName?.split(' ')[0] || 'User'})
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-surface-200 font-semibold text-surface-700 text-[10px]">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      userRole === 'ADMIN'
+                        ? 'bg-purple-600'
+                        : userRole === 'VENDOR'
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                    }`}
+                  />
+                  {userRole} Account ({userName?.split(' ')[0] || 'User'})
+                </span>
+              </div>
             ) : (
-              <span className="text-[10px] text-surface-300">Guest Visitor</span>
+              <span className="text-surface-500 font-medium">Welcome to BazaarOne</span>
             )}
           </div>
         </div>
       </div>
 
+      {/* 2. Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
-          {/* Logo & Brand Identity */}
-          <div
-            onClick={() => onSelectView && onSelectView(userRole === 'ADMIN' ? 'admin' : userRole === 'VENDOR' ? 'vendor' : 'customer')}
-            className="flex items-center gap-2.5 group select-none cursor-pointer"
+        <div className="flex items-center justify-between h-16 gap-4 sm:gap-8">
+          {/* Brand Logo */}
+          <Link
+            href="/"
+            onClick={() => onSelectView && onSelectView('customer')}
+            className="flex items-center gap-2.5 select-none shrink-0 group"
           >
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-brand-600 to-accent-cyan p-0.5 shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform duration-300">
-              <div className="h-full w-full bg-surface-950 rounded-[14px] flex items-center justify-center">
-                {userRole === 'ADMIN' ? (
-                  <Shield className="h-5 w-5 text-purple-400" />
-                ) : userRole === 'VENDOR' ? (
-                  <Store className="h-5 w-5 text-amber-400" />
-                ) : (
-                  <Store className="h-5 w-5 text-emerald-400" />
-                )}
-              </div>
+            <div className="h-9 w-9 rounded-xl bg-surface-900 flex items-center justify-center text-white shadow-xs group-hover:bg-brand-600 transition-colors">
+              <Store className="h-5 w-5 text-white" />
             </div>
             <div className="flex flex-col text-left">
-              <span className="font-display text-lg font-extrabold tracking-tight text-surface-900 leading-tight flex items-center gap-1">
-                BAZAAR<span className="text-brand-600 font-normal">ONE</span>
+              <span className="font-display text-lg font-black tracking-tight text-surface-900 leading-none">
+                BAZAAR<span className="text-brand-600 font-medium">ONE</span>
               </span>
-              <span className="text-[10px] font-semibold tracking-widest uppercase text-surface-400">
-                {userRole === 'ADMIN'
-                  ? 'Super Admin Portal'
-                  : userRole === 'VENDOR'
-                  ? 'Merchant Portal'
-                  : 'Multi-Vendor Marketplace'}
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-surface-400 mt-0.5">
+                Marketplace
               </span>
             </div>
-          </div>
+          </Link>
 
-          {/* Dynamic Navigation Links based on Authenticated Role */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-surface-700">
-            {/* 1. CUSTOMER OR GUEST NAVIGATION */}
+          {/* Central Search Bar */}
+          {onSearchChange ? (
+            <div className="hidden md:flex flex-1 max-w-xl relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-surface-400">
+                <Search className="h-4 w-4" />
+              </div>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search products, brands and stores..."
+                className="w-full pl-10 pr-4 py-2 text-xs rounded-xl bg-surface-100/80 border border-surface-200/80 text-surface-900 placeholder:text-surface-400 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => onSearchChange('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-surface-400 hover:text-surface-700"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="hidden md:block flex-1" />
+          )}
+
+          {/* Right Action Icons & Profile */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Customer Navigation */}
             {(!userRole || userRole === 'CUSTOMER') && (
               <>
-                <button
-                  onClick={() => onSelectView && onSelectView('customer')}
-                  className={`hover:text-brand-600 transition-colors ${
-                    activeView === 'customer' ? 'text-brand-600' : ''
-                  }`}
-                >
-                  Marketplace
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectView && onSelectView('customer');
-                    const el = document.getElementById('catalog-filters');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="hover:text-brand-600 transition-colors"
-                >
-                  Categories (12)
-                </button>
-                {userRole === 'CUSTOMER' && onOpenOrders && (
-                  <button
-                    onClick={onOpenOrders}
-                    className="hover:text-brand-600 transition-colors flex items-center gap-1"
-                  >
-                    <Package className="h-3.5 w-3.5 text-brand-600" /> My Orders ({ordersCount})
-                  </button>
-                )}
-                {userRole === 'CUSTOMER' && onOpenAddresses && (
-                  <button
-                    onClick={onOpenAddresses}
-                    className="hover:text-brand-600 transition-colors flex items-center gap-1"
-                  >
-                    <MapPin className="h-3.5 w-3.5 text-brand-600" /> Saved Addresses
-                  </button>
-                )}
-                {!userRole && onOpenVendorApply && (
-                  <button
-                    onClick={onOpenVendorApply}
-                    className="hover:text-amber-600 transition-colors text-amber-700 font-semibold"
-                  >
-                    Become a Seller
-                  </button>
-                )}
-              </>
-            )}
-
-            {/* 2. VENDOR NAVIGATION (Strictly Merchant Tools) */}
-            {userRole === 'VENDOR' && (
-              <>
-                <Link
-                  href="/vendor"
-                  className="flex items-center gap-1.5 font-bold text-amber-600 hover:text-amber-700 transition-colors"
-                >
-                  <Store className="h-3.5 w-3.5" /> Merchant Dashboard
-                </Link>
-              </>
-            )}
-
-            {/* 3. ADMIN NAVIGATION (Strictly Platform Governance) */}
-            {userRole === 'ADMIN' && (
-              <>
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-1.5 font-bold text-purple-600 hover:text-purple-700 transition-colors"
-                >
-                  <Shield className="h-3.5 w-3.5" /> Admin Console
-                </Link>
-              </>
-            )}
-          </nav>
-
-          {/* Right Controls */}
-          <div className="hidden sm:flex items-center gap-3">
-            {/* Customer Only Icons: Wishlist & Cart */}
-            {(!userRole || userRole === 'CUSTOMER') && (
-              <>
+                {/* Wishlist Icon Button */}
                 {onOpenWishlist && (
                   <button
+                    type="button"
                     onClick={onOpenWishlist}
-                    className="relative p-2 rounded-xl text-surface-600 hover:text-rose-600 hover:bg-rose-50/50 transition-colors"
+                    className="relative p-2.5 rounded-xl text-surface-600 hover:text-rose-600 hover:bg-rose-50/60 transition-colors"
                     title="Wishlist"
+                    aria-label="View Saved Wishlist"
                   >
                     <Heart className="h-5 w-5" />
                     {wishlistCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center shadow-xs">
+                      <span className="absolute 0.5 top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
                         {wishlistCount}
                       </span>
                     )}
                   </button>
                 )}
 
+                {/* Cart Icon Button */}
                 {onOpenCart && (
                   <button
+                    type="button"
                     onClick={onOpenCart}
-                    className="relative p-2 rounded-xl text-surface-600 hover:text-brand-600 hover:bg-brand-50/50 transition-colors"
+                    className="relative p-2.5 rounded-xl text-surface-600 hover:text-brand-600 hover:bg-brand-50/60 transition-colors"
                     title="Shopping Cart"
+                    aria-label="View Shopping Cart"
                   >
                     <ShoppingBag className="h-5 w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-brand-600 text-white text-[10px] font-extrabold flex items-center justify-center shadow-xs">
+                      <span className="absolute 0.5 top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-brand-600 text-white text-[10px] font-bold flex items-center justify-center">
                         {cartCount}
                       </span>
                     )}
@@ -240,107 +213,125 @@ export const Navbar: React.FC<NavbarProps> = ({
               </>
             )}
 
-            {/* Authenticated User Profile Chip / Sign In Button */}
+            {/* Authenticated User Account Chip / Sign In */}
             {userRole ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-surface-200">
+              <div className="flex items-center gap-1.5 pl-2 border-l border-surface-200">
                 <button
                   type="button"
                   onClick={onOpenAccount}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-100 hover:bg-surface-200/80 border border-surface-200 text-left transition-all cursor-pointer group"
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-surface-50 hover:bg-surface-100 border border-surface-200/80 text-left transition-all cursor-pointer group"
                   title="Open Customer Account Hub"
                 >
                   <div
-                    className={`h-7 w-7 rounded-full text-white flex items-center justify-center text-xs font-bold shadow-xs ${
+                    className={`h-7 w-7 rounded-lg text-white flex items-center justify-center text-xs font-bold shadow-xs ${
                       userRole === 'ADMIN'
                         ? 'bg-purple-600'
                         : userRole === 'VENDOR'
                         ? 'bg-amber-600'
-                        : 'bg-brand-600'
-                    }`}
+                        : 'bg-surface-900 group-hover:bg-brand-600'
+                    } transition-colors`}
                   >
                     {userName ? userName.charAt(0).toUpperCase() : 'U'}
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-surface-900 group-hover:text-brand-600 leading-tight transition-colors">
-                      {userName || 'User'}
+                  <div className="hidden sm:flex flex-col">
+                    <span className="text-xs font-bold text-surface-900 group-hover:text-brand-600 leading-tight transition-colors truncate max-w-[100px]">
+                      {userName || 'Account'}
                     </span>
-                    <span
-                      className={`text-[10px] font-semibold ${
-                        userRole === 'ADMIN'
-                          ? 'text-purple-700'
-                          : userRole === 'VENDOR'
-                          ? 'text-amber-700'
-                          : 'text-emerald-700'
-                      }`}
-                    >
-                      {userRole} Account
+                    <span className="text-[10px] font-medium text-surface-500">
+                      {userRole === 'CUSTOMER' ? 'Account Hub' : userRole}
                     </span>
                   </div>
                 </button>
 
                 {onLogout && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
+                  <button
+                    type="button"
                     onClick={onLogout}
                     title="Sign Out"
-                    className="text-surface-600 hover:text-rose-600"
+                    className="p-2 rounded-xl text-surface-400 hover:text-rose-600 hover:bg-rose-50/60 transition-colors"
+                    aria-label="Sign Out"
                   >
                     <LogOut className="h-4 w-4" />
-                  </Button>
+                  </button>
                 )}
               </div>
             ) : (
               <div className="flex items-center gap-2 pl-2 border-l border-surface-200">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onOpenAuthModal}
-                  leftIcon={<User className="h-4 w-4" />}
-                >
+                <Button variant="ghost" size="sm" onClick={onOpenAuthModal}>
                   Sign In
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={onOpenAuthModal}
-                >
+                <Button variant="primary" size="sm" onClick={onOpenAuthModal}>
                   Register
                 </Button>
               </div>
             )}
-          </div>
 
-          {/* Mobile Hamburger */}
-          <div className="flex sm:hidden items-center gap-2">
-            {(!userRole || userRole === 'CUSTOMER') && onOpenCart && (
-              <button onClick={onOpenCart} className="p-2 text-surface-700 relative">
-                <ShoppingBag className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="absolute top-0 right-0 h-3.5 w-3.5 rounded-full bg-brand-600 text-white text-[9px] font-bold flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
+            {/* Mobile Menu Hamburger */}
+            <div className="flex md:hidden items-center ml-1">
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-xl text-surface-700 hover:bg-surface-100 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
-            )}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-surface-700 hover:bg-surface-100"
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* 3. Category Navigation Rail (Desktop) */}
+      {(!userRole || userRole === 'CUSTOMER') && (
+        <div className="hidden md:block border-t border-surface-100 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="flex items-center gap-1 overflow-x-auto py-2 scrollbar-none text-xs font-medium text-surface-600">
+              {CANONICAL_CATEGORIES.map((cat) => {
+                const isActive = selectedCategory === cat.slug;
+                return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => handleCategoryClick(cat.slug)}
+                    className={`px-3 py-1 rounded-lg whitespace-nowrap transition-colors select-none ${
+                      isActive
+                        ? 'text-brand-600 font-bold bg-brand-50'
+                        : 'hover:text-surface-900 hover:bg-surface-50'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="sm:hidden border-t border-surface-200 bg-white/95 backdrop-blur-xl p-4 space-y-3 text-left animate-slide-down">
-          {userRole ? (
+        <div className="md:hidden border-t border-surface-200 bg-white p-4 space-y-4 text-left animate-slide-down shadow-xl">
+          {/* Mobile Search */}
+          {onSearchChange && (
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-surface-400">
+                <Search className="h-4 w-4" />
+              </div>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search products, brands and stores..."
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-surface-50 border border-surface-200 text-surface-900 focus:outline-none focus:border-brand-500"
+              />
+            </div>
+          )}
+
+          {/* User Status in Mobile Menu */}
+          {userRole && (
             <div className="p-3 rounded-xl bg-surface-50 border border-surface-200 flex items-center justify-between">
               <div>
                 <span className="font-bold text-xs text-surface-900 block">{userName}</span>
-                <span className="text-[10px] text-surface-500 font-semibold">{userRole} &bull; {userEmail}</span>
+                <span className="text-[10px] text-surface-500 font-medium">{userEmail}</span>
               </div>
               {onLogout && (
                 <button
@@ -348,96 +339,106 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="text-xs text-rose-600 font-bold"
+                  className="text-xs text-rose-600 font-bold hover:underline"
                 >
                   Sign Out
                 </button>
               )}
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  onOpenAuthModal && onOpenAuthModal();
-                  setMobileMenuOpen(false);
-                }}
-              >
-                Sign In
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => {
-                  onOpenAuthModal && onOpenAuthModal();
-                  setMobileMenuOpen(false);
-                }}
-              >
-                Register
-              </Button>
+          )}
+
+          {/* Category Rail (Mobile) */}
+          <div className="space-y-1 pt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-surface-400 px-2 block">
+              Shop Categories
+            </span>
+            <div className="grid grid-cols-2 gap-1.5 pt-1">
+              {CANONICAL_CATEGORIES.slice(1).map((cat) => {
+                const isActive = selectedCategory === cat.slug;
+                return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => {
+                      handleCategoryClick(cat.slug);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`text-left p-2 rounded-lg text-xs font-medium transition-colors ${
+                      isActive ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-surface-50 text-surface-700'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Customer Action Links */}
+          {userRole === 'CUSTOMER' && (
+            <div className="pt-2 border-t border-surface-100 space-y-1 text-xs">
+              {onOpenOrders && (
+                <button
+                  onClick={() => {
+                    onOpenOrders();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-surface-50 text-surface-700 font-medium"
+                >
+                  <span className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-brand-600" /> My Orders
+                  </span>
+                  <span className="text-surface-400 text-xs">({ordersCount})</span>
+                </button>
+              )}
+
+              {onOpenAddresses && (
+                <button
+                  onClick={() => {
+                    onOpenAddresses();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-surface-50 text-surface-700 font-medium"
+                >
+                  <MapPin className="h-4 w-4 text-brand-600" /> Saved Addresses
+                </button>
+              )}
+
+              {onOpenAccount && (
+                <button
+                  onClick={() => {
+                    onOpenAccount();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-surface-50 text-surface-700 font-medium"
+                >
+                  <User className="h-4 w-4 text-brand-600" /> Account Settings
+                </button>
+              )}
             </div>
           )}
 
-          <div className="flex flex-col gap-2 pt-2 text-xs">
-            {(!userRole || userRole === 'CUSTOMER') && (
-              <>
-                <button
-                  onClick={() => {
-                    onSelectView && onSelectView('customer');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 p-2 rounded-xl hover:bg-surface-100 font-semibold"
-                >
-                  <Store className="h-4 w-4 text-brand-600" /> Marketplace Catalog
-                </button>
-                {userRole === 'CUSTOMER' && onOpenOrders && (
-                  <button
-                    onClick={() => {
-                      onOpenOrders();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2 p-2 rounded-xl hover:bg-surface-100 font-semibold"
-                  >
-                    <Package className="h-4 w-4 text-brand-600" /> My Orders ({ordersCount})
-                  </button>
-                )}
-                {userRole === 'CUSTOMER' && onOpenAddresses && (
-                  <button
-                    onClick={() => {
-                      onOpenAddresses();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2 p-2 rounded-xl hover:bg-surface-100 font-semibold"
-                  >
-                    <MapPin className="h-4 w-4 text-brand-600" /> Saved Shipping Addresses
-                  </button>
-                )}
-              </>
-            )}
+          {userRole === 'VENDOR' && (
+            <Link
+              href="/vendor"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 p-2 rounded-xl bg-amber-50 text-amber-800 text-xs font-bold"
+            >
+              <Store className="h-4 w-4 text-amber-600" /> Go to Vendor Dashboard
+            </Link>
+          )}
 
-            {userRole === 'VENDOR' && (
-              <Link
-                href="/vendor"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 p-2 rounded-xl hover:bg-surface-100 font-semibold text-amber-700"
-              >
-                <Store className="h-4 w-4 text-amber-600" /> Merchant Storefront & Orders
-              </Link>
-            )}
-
-            {userRole === 'ADMIN' && (
-              <Link
-                href="/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 p-2 rounded-xl hover:bg-surface-100 font-semibold text-purple-700"
-              >
-                <Shield className="h-4 w-4 text-purple-600" /> Super Admin Governance
-              </Link>
-            )}
-          </div>
+          {userRole === 'ADMIN' && (
+            <Link
+              href="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 p-2 rounded-xl bg-purple-50 text-purple-800 text-xs font-bold"
+            >
+              <Shield className="h-4 w-4 text-purple-600" /> Go to Admin Console
+            </Link>
+          )}
         </div>
       )}
     </header>
   );
 };
+

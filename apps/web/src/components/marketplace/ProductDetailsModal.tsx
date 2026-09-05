@@ -342,28 +342,28 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               <Lock className="h-4 w-4 text-emerald-600 shrink-0" />
               <div>
                 <span className="font-bold text-surface-900 text-xs block">Razorpay Test Checkout</span>
-                <span className="text-[10px] text-surface-500">256-Bit SSL Encryption</span>
+                <span className="text-[10px] text-surface-500">Encrypted Sandbox</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <UserCheck className="h-4 w-4 text-brand-600 shrink-0" />
               <div>
                 <span className="font-bold text-surface-900 text-xs block">Verified Reviews</span>
-                <span className="text-[10px] text-surface-500">Delivered Buyer Only</span>
+                <span className="text-[10px] text-surface-500">Delivered Buyers Only</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4 text-amber-600 shrink-0" />
               <div>
-                <span className="font-bold text-surface-900 text-xs block">Approved Merchants</span>
-                <span className="text-[10px] text-surface-500">4 Verified Partners</span>
+                <span className="font-bold text-surface-900 text-xs block">Trusted Merchants</span>
+                <span className="text-[10px] text-surface-500">Verified Stores</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-purple-600 shrink-0" />
+              <ShieldCheck className="h-4 w-4 text-indigo-600 shrink-0" />
               <div>
                 <span className="font-bold text-surface-900 text-xs block">Account Security</span>
-                <span className="text-[10px] text-surface-500">JWT Session Isolation</span>
+                <span className="text-[10px] text-surface-500">Session Privacy</span>
               </div>
             </div>
           </div>

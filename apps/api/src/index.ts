@@ -1,22 +1,45 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import app from './app';
+import { env } from './config/env';
+import { connectDB, disconnectDB } from './config/db';
+import { Server } from 'http';
 
-dotenv.config();
+let server: Server | null = null;
 
-const app = express();
-const port = process.env.PORT || 5000;
+async function bootstrap() {
+  await connectDB();
 
-app.use(cors());
-app.use(express.json());
-
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'Backend API is running and healthy locally!'
+  server = app.listen(env.PORT, () => {
+    console.log(`🚀 [BazaarOne API]: Server is running at http://localhost:${env.PORT}`);
+    console.log(`🔗 [BazaarOne API]: Health check at http://localhost:${env.PORT}/api/health`);
   });
-});
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+  const handleShutdown = async (signal: string) => {
+    console.log(`\n🛑 [BazaarOne API]: Received ${signal}. Starting graceful shutdown...`);
+
+    if (server) {
+      server.close(async () => {
+        console.log('HTTP server closed. In-flight requests completed.');
+        await disconnectDB();
+        console.log('Graceful shutdown completed.');
+        process.exit(0);
+      });
+
+      // Force shutdown after 10 seconds if hanging
+      setTimeout(() => {
+        console.error('Forced shutdown due to timeout.');
+        process.exit(1);
+      }, 10000).unref();
+    } else {
+      await disconnectDB();
+      process.exit(0);
+    }
+  };
+
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+}
+
+bootstrap().catch((err) => {
+  console.error('Fatal bootstrap error:', err);
+  process.exit(1);
 });

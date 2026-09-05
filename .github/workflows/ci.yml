@@ -1,0 +1,62 @@
+name: CI Quality Gate & Build Verification
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate:
+    name: Build, Lint & Test Verification
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 18.x, 20.x ]
+
+    env:
+      NODE_ENV: test
+      PORT: 5000
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'mongodb+srv://mock:mock@cluster0.mongodb.net/marketplace?retryWrites=true&w=majority' }}
+      JWT_SECRET: ci_test_jwt_secret_key_2026
+      COOKIE_SECRET: ci_test_cookie_secret_key_2026
+      CORS_ORIGIN: http://localhost:3000
+      RAZORPAY_KEY_ID: rzp_test_TWo5jJDGLNDsBZ
+      RAZORPAY_KEY_SECRET: I44Zdj1v2N6DYjh4vVBL4NtC
+      RAZORPAY_WEBHOOK_SECRET: bazaarone_razorpay_webhook_secret_2026
+      CLOUDINARY_CLOUD_NAME: MULTI-VENDOR
+      CLOUDINARY_API_KEY: 923119275161814
+      CLOUDINARY_API_SECRET: 8dkmYoaMxt_bgshJADeq547Fd9E
+      PEXELS_API_KEY: Dd0Eq8OuuzMhPDt2syYCG4H8oQEM69SPkPgPG7NmCtdenbyvskmU5PJ7
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install Workspace Dependencies
+        run: npm ci
+
+      - name: 🗄️ Generate Prisma Client
+        run: npx prisma generate
+
+      - name: 🔍 Type-Check Express API
+        run: npx tsc --noEmit --project apps/api/tsconfig.json
+
+      - name: 🔍 Type-Check Next.js Frontend
+        run: npx tsc --noEmit --project apps/web/tsconfig.json
+
+      - name: 🧪 Run Backend Test Suite
+        run: npm run test --workspace=apps/api
+
+      - name: 🏗️ Compile Express API
+        run: npm run build --workspace=apps/api
+
+      - name: 🚀 Production Build Next.js Frontend
+        run: npm run build --workspace=apps/web

@@ -15,6 +15,20 @@ import {
   Lock,
   LogOut,
   Star,
+  Headphones,
+  Monitor,
+  Shirt,
+  Home as HomeIcon,
+  Apple,
+  Dumbbell,
+  BookOpen,
+  Gamepad2,
+  Car,
+  Smartphone,
+  Filter as FilterIcon,
+  X,
+  ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Navbar } from '@/components/layout/Navbar';
@@ -114,6 +128,7 @@ export default function RootMarketplacePage() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [activeReviewItem, setActiveReviewItem] = useState<OrderItem | null>(null);
   const [isVendorApplyOpen, setIsVendorApplyOpen] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -554,6 +569,57 @@ export default function RootMarketplacePage() {
     router.push('/login');
   };
 
+  // Category Icon Mapping
+  const getCategoryIcon = (slug: string) => {
+    switch (slug) {
+      case 'electronics':
+        return <Headphones className="h-5 w-5 text-brand-600" />;
+      case 'computers':
+        return <Monitor className="h-5 w-5 text-indigo-600" />;
+      case 'fashion':
+        return <Shirt className="h-5 w-5 text-rose-500" />;
+      case 'home-kitchen':
+        return <HomeIcon className="h-5 w-5 text-amber-600" />;
+      case 'beauty':
+        return <Sparkles className="h-5 w-5 text-pink-500" />;
+      case 'grocery':
+        return <Apple className="h-5 w-5 text-emerald-600" />;
+      case 'sports-fitness':
+        return <Dumbbell className="h-5 w-5 text-cyan-600" />;
+      case 'books':
+        return <BookOpen className="h-5 w-5 text-orange-600" />;
+      case 'toys-games':
+        return <Gamepad2 className="h-5 w-5 text-purple-600" />;
+      case 'automotive':
+        return <Car className="h-5 w-5 text-slate-700" />;
+      case 'mobile-accessories':
+        return <Smartphone className="h-5 w-5 text-blue-600" />;
+      default:
+        return <Sparkles className="h-5 w-5 text-brand-600" />;
+    }
+  };
+
+  const selectedVendorObj = vendors.find((v) => v.id === selectedVendor || v.slug === selectedVendor);
+  const selectedCategoryObj = categories.find((c) => c.slug === selectedCategory || c.id === selectedCategory);
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setSelectedCategory('');
+    setSelectedVendor('');
+    setSelectedBrand('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSort('newest');
+  };
+
+  const activeFiltersCount = [
+    selectedCategory,
+    selectedVendor,
+    minPrice,
+    maxPrice,
+    search,
+  ].filter(Boolean).length;
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-surface-50/50">
       {/* Toast Notification Popup */}
@@ -564,7 +630,7 @@ export default function RootMarketplacePage() {
         </div>
       )}
 
-      {/* Dynamic Navbar with Role-Aware Navigation */}
+      {/* Dynamic Navbar */}
       <Navbar
         userRole={user.role}
         userName={user.name}
@@ -573,6 +639,10 @@ export default function RootMarketplacePage() {
         wishlistCount={wishlist.length}
         ordersCount={orders.length}
         activeView="customer"
+        search={search}
+        onSearchChange={setSearch}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
         onOpenCart={() => setIsCartOpen(true)}
         onOpenWishlist={() => setIsWishlistOpen(true)}
         onOpenOrders={() => setIsAccountModalOpen(true)}
@@ -582,113 +652,203 @@ export default function RootMarketplacePage() {
         onLogout={handleLogoutClick}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
         {/* ========================================================= */}
-        {/* DESTINATION 1: CUSTOMER MARKETPLACE (Role: CUSTOMER)     */}
+        {/* CUSTOMER MARKETPLACE (Role: CUSTOMER)                     */}
         {/* ========================================================= */}
         {user.role === 'CUSTOMER' && (
-          <div className="space-y-10 animate-fade-in">
-            {/* Value Proposition Hero Banner */}
-            <div className="relative p-8 md:p-12 rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-surface-950 text-white overflow-hidden shadow-2xl text-left">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative z-10 max-w-2xl space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-semibold tracking-wide backdrop-blur-xs">
-                  <Sparkles className="h-3.5 w-3.5 text-accent-gold" />
-                  Curated Multi-Vendor Marketplace &bull; 12 Specialized Categories
-                </div>
-                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.15]">
-                  Discover Top Brands & Curated Merchant Stores
-                </h1>
-                <p className="text-sm text-surface-300 leading-relaxed max-w-xl">
-                  Shop trusted products from specialized merchants across technology, fashion, home, fitness and everyday living with secure Razorpay test protection.
-                </p>
+          <div className="space-y-16 animate-fade-in">
+            {/* 1. EDITORIAL HERO SECTION */}
+            <section className="relative overflow-hidden rounded-3xl bg-surface-900 text-white p-8 md:p-14 border border-surface-800 shadow-xl text-left">
+              {/* Subtle background glow */}
+              <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-600/15 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="pt-2 flex flex-wrap items-center gap-3">
-                  <Button
-                    variant="primary"
-                    size="md"
-                    onClick={() => {
-                      const el = document.getElementById('catalog-filters');
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    rightIcon={<ArrowRight className="h-4 w-4" />}
-                  >
-                    Explore Catalogue
-                  </Button>
-                  <Button
-                    variant="glass"
-                    size="md"
-                    className="text-white border-white/20 hover:bg-white/10"
-                    onClick={() => setIsAccountModalOpen(true)}
-                    leftIcon={<Package className="h-4 w-4" />}
-                  >
-                    My Past Orders ({orders.length})
-                  </Button>
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {/* Left Hero Copy */}
+                <div className="lg:col-span-7 space-y-5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-semibold tracking-wide backdrop-blur-xs">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    Curated products &bull; Trusted merchants
+                  </div>
+
+                  <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.12] text-white">
+                    Discover products worth bringing home.
+                  </h1>
+
+                  <p className="text-sm md:text-base text-surface-300 leading-relaxed max-w-xl font-normal">
+                    Shop curated products from trusted merchants across technology, fashion, home, beauty and everyday essentials.
+                  </p>
+
+                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      className="bg-white text-surface-950 hover:bg-surface-100 hover:text-black font-bold shadow-none"
+                      onClick={() => {
+                        const el = document.getElementById('catalog-section');
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      rightIcon={<ArrowRight className="h-4 w-4 text-surface-900" />}
+                    >
+                      Explore Marketplace
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      className="text-surface-300 hover:text-white hover:bg-white/10 border border-white/15"
+                      onClick={() => {
+                        const el = document.getElementById('stores-section');
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                    >
+                      Featured Stores
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Right Hero Editorial Visual Composition */}
+                <div className="hidden lg:flex lg:col-span-5 justify-end">
+                  <div className="relative w-full max-w-sm">
+                    {/* Floating Product Highlight Card */}
+                    <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl space-y-3 text-left">
+                      <div className="aspect-4/3 w-full rounded-xl overflow-hidden bg-surface-800 relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={
+                            products[0]?.images?.[0] ||
+                            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80'
+                          }
+                          alt="Curated Collection"
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-surface-950/80 text-[10px] font-bold text-white">
+                          Staff Pick
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-[11px] font-semibold text-surface-300">
+                            {products[0]?.vendor?.businessName || 'Apex Electronics'}
+                          </span>
+                          <span className="flex items-center gap-1 text-amber-400 font-bold text-[11px]">
+                            <Star className="h-3 w-3 fill-amber-400" /> 4.9
+                          </span>
+                        </div>
+                        <h4 className="text-xs font-bold text-white truncate">
+                          {products[0]?.name || 'Curated Sound Gear & Tech'}
+                        </h4>
+                        <div className="text-sm font-black text-white">
+                          ₹{(products[0]?.discountPrice ?? products[0]?.price ?? 4999).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </section>
 
-            {/* Featured Merchant Partners Showcase */}
-            <div className="space-y-4 text-left">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            {/* 2. VALUE PROPOSITION TRUST ROW */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-2 border-y border-surface-200/60 text-left">
+              <div className="flex items-start gap-3.5 p-3">
+                <div className="p-2.5 rounded-xl bg-surface-100 text-surface-700 shrink-0">
+                  <Store className="h-5 w-5" />
+                </div>
                 <div>
-                  <h2 className="text-xl font-extrabold text-surface-950 tracking-tight flex items-center gap-2">
-                    <Store className="h-5 w-5 text-amber-500" />
-                    Featured Merchant Partners
-                  </h2>
-                  <p className="text-xs text-surface-500">
-                    Specialized independent businesses verified for quality and catalog excellence
+                  <h3 className="text-xs font-bold text-surface-900">Trusted Merchants</h3>
+                  <p className="text-[11px] text-surface-500 leading-snug mt-0.5">
+                    Curated partner stores verified for catalog authenticity and fulfillment.
                   </p>
                 </div>
-                <span className="text-xs font-semibold text-surface-600 bg-surface-100 px-3 py-1.5 rounded-xl border border-surface-200">
-                  4 Approved Merchants
-                </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="flex items-start gap-3.5 p-3">
+                <div className="p-2.5 rounded-xl bg-surface-100 text-surface-700 shrink-0">
+                  <ShieldCheck className="h-5 w-5 text-brand-600" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-surface-900">Secure Checkout</h3>
+                  <p className="text-[11px] text-surface-500 leading-snug mt-0.5">
+                    Safe payment processing supported by Razorpay test sandbox.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3.5 p-3">
+                <div className="p-2.5 rounded-xl bg-surface-100 text-surface-700 shrink-0">
+                  <UserCheck className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-surface-900">Verified Reviews</h3>
+                  <p className="text-[11px] text-surface-500 leading-snug mt-0.5">
+                    Customer ratings exclusively from verified completed deliveries.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* 3. FEATURED STORES SECTION */}
+            <section id="stores-section" className="space-y-6 text-left">
+              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-surface-950 tracking-tight">
+                    Featured Stores
+                  </h2>
+                  <p className="text-xs text-surface-500 mt-0.5">
+                    Discover collections from trusted independent merchants.
+                  </p>
+                </div>
+                {selectedVendor && (
+                  <button
+                    onClick={() => setSelectedVendor('')}
+                    className="text-xs font-semibold text-brand-600 hover:underline"
+                  >
+                    View All Stores
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {vendors.map((v) => {
                   const isSelected = selectedVendor === v.id || selectedVendor === v.slug;
                   return (
                     <div
                       key={v.id}
-                      className={`p-5 rounded-3xl bg-white border transition-all flex flex-col justify-between space-y-4 hover:shadow-lg ${
+                      className={`p-5 rounded-2xl bg-white border transition-all duration-200 flex flex-col justify-between space-y-4 hover:shadow-card-hover ${
                         isSelected
-                          ? 'border-amber-500 ring-2 ring-amber-500/20 shadow-md'
-                          : 'border-surface-200/80 hover:border-amber-400/50'
+                          ? 'border-brand-600 ring-2 ring-brand-500/20 shadow-xs'
+                          : 'border-surface-200/80 hover:border-surface-300'
                       }`}
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <div className="h-10 w-10 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-amber-700 shadow-xs">
+                          <div className="h-10 w-10 rounded-xl bg-surface-100 flex items-center justify-center text-surface-800">
                             <Store className="h-5 w-5" />
                           </div>
-                          <div className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60">
+                          <div className="flex items-center gap-1 text-xs font-bold text-surface-800 bg-surface-50 px-2 py-0.5 rounded-md border border-surface-200">
                             <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                             <span>{v.rating && v.rating > 0 ? v.rating.toFixed(1) : '4.8'}</span>
                           </div>
                         </div>
 
                         <div>
-                          <h3 className="font-display font-extrabold text-sm text-surface-950">
+                          <h3 className="font-display font-bold text-sm text-surface-950">
                             {v.businessName}
                           </h3>
-                          <p className="text-[11px] text-surface-500 line-clamp-2 mt-1 leading-snug">
-                            {v.description || 'Specialized catalog partner on BazaarOne'}
+                          <p className="text-[11px] text-surface-500 line-clamp-2 mt-1 leading-relaxed">
+                            {v.description || 'Curated store collection on BazaarOne'}
                           </p>
                         </div>
                       </div>
 
-                      <div className="pt-3 border-t border-surface-100 flex items-center justify-between">
-                        <span className="text-xs font-extrabold text-surface-700">
-                          {v.productCount ?? 0} Products
-                        </span>
+                      <div className="pt-3 border-t border-surface-100">
                         <Button
-                          variant={isSelected ? 'primary' : 'outline'}
+                          variant={isSelected ? 'secondary' : 'outline'}
                           size="sm"
-                          className="text-xs font-bold rounded-xl"
+                          className="w-full text-xs font-semibold rounded-lg"
                           onClick={() => {
                             setSelectedVendor(isSelected ? '' : v.id);
-                            const el = document.getElementById('catalog-filters');
+                            const el = document.getElementById('catalog-section');
                             el?.scrollIntoView({ behavior: 'smooth' });
                           }}
                         >
@@ -699,95 +859,260 @@ export default function RootMarketplacePage() {
                   );
                 })}
               </div>
-            </div>
+            </section>
 
-            {/* Catalog Filters & Search */}
-            <div id="catalog-filters" className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-left">
+            {/* 4. SHOP BY CATEGORY SECTION */}
+            <section className="space-y-6 text-left">
+              <div className="flex items-baseline justify-between">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-surface-950 tracking-tight">
-                    Curated Marketplace Catalogue
+                  <h2 className="text-xl sm:text-2xl font-black text-surface-950 tracking-tight">
+                    Shop by Category
                   </h2>
-                  <p className="text-xs text-surface-500">
-                    Real-time inventory and verified products across 12 categories
+                  <p className="text-xs text-surface-500 mt-0.5">
+                    Browse everyday essentials and specialty items.
                   </p>
                 </div>
-                <span className="text-xs font-semibold text-surface-600 bg-surface-100 px-3 py-1.5 rounded-xl border border-surface-200">
-                  Showing {filteredProducts.length} products
-                </span>
               </div>
 
-              <ProductFilters
-                categories={categories}
-                brands={brands}
-                vendors={vendors}
-                search={search}
-                selectedCategory={selectedCategory}
-                selectedVendor={selectedVendor}
-                selectedBrand={selectedBrand}
-                minPrice={minPrice}
-                maxPrice={maxPrice}
-                sort={sort}
-                totalResults={filteredProducts.length}
-                onSearchChange={setSearch}
-                onCategoryChange={setSelectedCategory}
-                onVendorChange={setSelectedVendor}
-                onBrandChange={setSelectedBrand}
-                onMinPriceChange={setMinPrice}
-                onMaxPriceChange={setMaxPrice}
-                onSortChange={setSort}
-                onReset={() => {
-                  setSearch('');
-                  setSelectedCategory('');
-                  setSelectedVendor('');
-                  setSelectedBrand('');
-                  setMinPrice('');
-                  setMaxPrice('');
-                  setSort('newest');
-                }}
-              />
-            </div>
-
-            {/* Product Grid */}
-            {isLoadingProducts ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, idx) => (
-                  <ProductCardSkeleton key={idx} />
-                ))}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {categories.map((cat) => {
+                  const isSelected = selectedCategory === cat.slug || selectedCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategory(isSelected ? '' : cat.slug);
+                        const el = document.getElementById('catalog-section');
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className={`p-3.5 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between space-y-2 group ${
+                        isSelected
+                          ? 'bg-brand-50 border-brand-500/40 shadow-xs'
+                          : 'bg-white border-surface-200/80 hover:border-surface-300 hover:shadow-subtle'
+                      }`}
+                    >
+                      <div className="p-2 rounded-lg bg-surface-50 w-fit group-hover:scale-105 transition-transform">
+                        {getCategoryIcon(cat.slug)}
+                      </div>
+                      <div>
+                        <span className="font-semibold text-xs text-surface-900 block truncate group-hover:text-brand-600 transition-colors">
+                          {cat.name}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-            ) : filteredProducts.length === 0 ? (
-              <EmptyState
-                icon={<Package className="h-10 w-10 text-surface-400" />}
-                title="No matching products found"
-                description="Try clearing your search query or adjusting your price filters."
-                actionLabel="Reset All Filters"
-                onAction={() => {
-                  setSearch('');
-                  setSelectedCategory('');
-                  setSelectedVendor('');
-                  setMinPrice('');
-                  setMaxPrice('');
-                }}
-              />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onSelect={(p) => setSelectedProduct(p)}
-                    onAddToCart={(p) => handleAddToCart(p, 1)}
-                    onAddToWishlist={(p) => handleAddToWishlist(p)}
-                    isInWishlist={wishlist.some((w) => w.productId === product.id)}
+            </section>
+
+            {/* 5. EXPLORE MARKETPLACE CATALOGUE */}
+            <section id="catalog-section" className="space-y-6 text-left">
+              {/* Section Header & Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-surface-200/70">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-black text-surface-950 tracking-tight">
+                    Explore Marketplace
+                  </h2>
+                  <p className="text-xs text-surface-500 mt-0.5">
+                    Find products from trusted merchants across everyday categories.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* Results Count */}
+                  <span className="text-xs text-surface-500 font-medium mr-2 hidden sm:inline">
+                    {filteredProducts.length} product{filteredProducts.length === 1 ? '' : 's'}
+                  </span>
+
+                  {/* Mobile Filter Trigger Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="md:hidden text-xs"
+                    onClick={() => setIsMobileFilterOpen(true)}
+                    leftIcon={<FilterIcon className="h-3.5 w-3.5" />}
+                  >
+                    Filters {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+                  </Button>
+
+                  {/* Sort Dropdown */}
+                  <select
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value)}
+                    className="rounded-lg border border-surface-200 bg-white px-3 py-1.5 text-xs font-semibold text-surface-800 focus:outline-none focus:border-brand-500 shadow-2xs"
+                  >
+                    <option value="newest">Sort: Newest Arrivals</option>
+                    <option value="price-asc">Sort: Price: Low to High</option>
+                    <option value="price-desc">Sort: Price: High to Low</option>
+                    <option value="rating">Sort: Top Rated</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Active Filter Chips */}
+              {activeFiltersCount > 0 && (
+                <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                  <span className="text-surface-400 font-medium text-[11px]">Active Filters:</span>
+                  {selectedVendorObj && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-100 border border-surface-200 text-surface-800 text-xs">
+                      Store: {selectedVendorObj.businessName}
+                      <button onClick={() => setSelectedVendor('')} className="hover:text-rose-600 ml-0.5">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  )}
+                  {selectedCategoryObj && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-100 border border-surface-200 text-surface-800 text-xs">
+                      Category: {selectedCategoryObj.name}
+                      <button onClick={() => setSelectedCategory('')} className="hover:text-rose-600 ml-0.5">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  )}
+                  {(minPrice || maxPrice) && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-100 border border-surface-200 text-surface-800 text-xs">
+                      Price: ₹{minPrice || '0'} – ₹{maxPrice || '∞'}
+                      <button
+                        onClick={() => {
+                          setMinPrice('');
+                          setMaxPrice('');
+                        }}
+                        className="hover:text-rose-600 ml-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  )}
+                  {search && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-surface-100 border border-surface-200 text-surface-800 text-xs">
+                      Query: &quot;{search}&quot;
+                      <button onClick={() => setSearch('')} className="hover:text-rose-600 ml-0.5">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  )}
+                  <button
+                    onClick={handleResetFilters}
+                    className="text-xs text-brand-600 hover:text-brand-700 font-semibold ml-2 hover:underline"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
+
+              {/* Main Catalog Layout (Left Sidebar + Right Product Grid) */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                {/* Desktop Left Filter Sidebar */}
+                <div className="hidden md:block md:col-span-3 sticky top-24">
+                  <ProductFilters
+                    categories={categories}
+                    brands={brands}
+                    vendors={vendors}
+                    search={search}
+                    selectedCategory={selectedCategory}
+                    selectedVendor={selectedVendor}
+                    selectedBrand={selectedBrand}
+                    minPrice={minPrice}
+                    maxPrice={maxPrice}
+                    sort={sort}
+                    totalResults={filteredProducts.length}
+                    onSearchChange={setSearch}
+                    onCategoryChange={setSelectedCategory}
+                    onVendorChange={setSelectedVendor}
+                    onBrandChange={setSelectedBrand}
+                    onMinPriceChange={setMinPrice}
+                    onMaxPriceChange={setMaxPrice}
+                    onSortChange={setSort}
+                    onReset={handleResetFilters}
                   />
-                ))}
+                </div>
+
+                {/* Right Product Grid */}
+                <div className="md:col-span-9">
+                  {isLoadingProducts ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {Array.from({ length: 6 }).map((_, idx) => (
+                        <ProductCardSkeleton key={idx} />
+                      ))}
+                    </div>
+                  ) : filteredProducts.length === 0 ? (
+                    <EmptyState
+                      icon={<Package className="h-8 w-8 text-surface-400" />}
+                      title="No products found"
+                      description="Try clearing your search query or adjusting your filters."
+                      actionLabel="Clear All Filters"
+                      onAction={handleResetFilters}
+                    />
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {filteredProducts.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onSelect={(p) => setSelectedProduct(p)}
+                          onAddToCart={(p) => handleAddToCart(p, 1)}
+                          onAddToWishlist={(p) => handleAddToWishlist(p)}
+                          isInWishlist={wishlist.some((w) => w.productId === product.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+            </section>
           </div>
         )}
       </main>
 
+      {/* Mobile Filter Drawer / Modal */}
+      {isMobileFilterOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/60 backdrop-blur-xs md:hidden animate-fade-in text-left">
+          <div className="relative w-full max-w-sm bg-white rounded-2xl p-4 max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl animate-slide-up">
+            <div className="flex items-center justify-between pb-2 border-b border-surface-100">
+              <span className="font-bold text-sm text-surface-900">Filter Products</span>
+              <button
+                onClick={() => setIsMobileFilterOpen(false)}
+                className="p-1 rounded-lg hover:bg-surface-100 text-surface-500"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <ProductFilters
+              categories={categories}
+              brands={brands}
+              vendors={vendors}
+              search={search}
+              selectedCategory={selectedCategory}
+              selectedVendor={selectedVendor}
+              selectedBrand={selectedBrand}
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              sort={sort}
+              totalResults={filteredProducts.length}
+              onSearchChange={setSearch}
+              onCategoryChange={setSelectedCategory}
+              onVendorChange={setSelectedVendor}
+              onBrandChange={setSelectedBrand}
+              onMinPriceChange={setMinPrice}
+              onMaxPriceChange={setMaxPrice}
+              onSortChange={setSort}
+              onReset={handleResetFilters}
+            />
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full"
+              onClick={() => setIsMobileFilterOpen(false)}
+            >
+              Show {filteredProducts.length} Results
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Global Modals & Drawers */}
+
       <ProductDetailsModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}

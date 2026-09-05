@@ -2,7 +2,7 @@ name: CI Quality Gate & Build Verification
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master, develop, 'aakif/**', '**' ]
   pull_request:
     branches: [ main, master ]
 
@@ -18,7 +18,7 @@ jobs:
     env:
       NODE_ENV: test
       PORT: 5000
-      DATABASE_URL: ${{ secrets.DATABASE_URL || 'mongodb+srv://mock:mock@cluster0.mongodb.net/marketplace?retryWrites=true&w=majority' }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       JWT_SECRET: ci_test_jwt_secret_key_2026
       COOKIE_SECRET: ci_test_cookie_secret_key_2026
       CORS_ORIGIN: http://localhost:3000
@@ -40,10 +40,20 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: 🔐 Verify Secrets & Configuration
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::DATABASE_URL repository secret is missing! Please add DATABASE_URL in GitHub Repository Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          echo "DATABASE_URL secret is configured."
+
       - name: 📦 Install Workspace Dependencies
         run: npm ci
 
       - name: 🗄️ Generate Prisma Client
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npx prisma generate
 
       - name: 🔍 Type-Check Express API
@@ -53,10 +63,15 @@ jobs:
         run: npx tsc --noEmit --project apps/web/tsconfig.json
 
       - name: 🧪 Run Backend Test Suite
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run test --workspace=apps/api
 
       - name: 🏗️ Compile Express API
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: npm run build --workspace=apps/api
 
       - name: 🚀 Production Build Next.js Frontend
         run: npm run build --workspace=apps/web
+

@@ -12,9 +12,11 @@
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
-    "dotenv-cli": "^11.0.0"
+    "dotenv-cli": "^11.0.0",
+    "prisma": "^5.22.0"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "mongodb": "^7.6.0"
   }
 }

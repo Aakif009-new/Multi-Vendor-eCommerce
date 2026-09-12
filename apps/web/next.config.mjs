@@ -4,6 +4,7 @@ const nextConfig = {
     const backendUrl =
       process.env.BACKEND_INTERNAL_URL ||
       process.env.API_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
       'http://localhost:5000';
 
     return [

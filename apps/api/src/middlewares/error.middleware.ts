@@ -15,9 +15,15 @@ export function errorHandler(
     return;
   }
 
-  // Known operational AppError
-  if (err instanceof AppError) {
-    sendError(res, err.message, err.statusCode, err.errors);
+  // Known operational AppError or error with statusCode / isOperational flag
+  if (err instanceof AppError || err.isOperational || (typeof err.statusCode === 'number' && err.statusCode < 500)) {
+    sendError(res, err.message || 'Operational error', err.statusCode || 400, err.errors);
+    return;
+  }
+
+  // CORS Policy Rejections
+  if (err.message && typeof err.message === 'string' && err.message.includes('CORS policy')) {
+    sendError(res, err.message, 403);
     return;
   }
 

@@ -15,7 +15,7 @@ export const env = {
   JWT_SECRET: process.env.JWT_SECRET || 'bazaarone_super_secret_jwt_key_2026_dev',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   COOKIE_SECRET: process.env.COOKIE_SECRET || 'bazaarone_cookie_secret_key',
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000, *.vercel.app',
 
   // Cloudinary Image Storage
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'MULTI-VENDOR',

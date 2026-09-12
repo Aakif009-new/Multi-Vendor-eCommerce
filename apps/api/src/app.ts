@@ -26,7 +26,7 @@ const allowedOrigins = env.CORS_ORIGIN
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (curl, server-to-server, Jest tests)
+      // Allow requests with no origin (curl, server-to-server, Jest tests, webhook dispatchers)
       if (!origin) return callback(null, true);
 
       if (env.NODE_ENV !== 'production') {
@@ -34,7 +34,18 @@ app.use(
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      const isAllowed =
+        allowedOrigins.includes('*') ||
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.some((allowed) => {
+          if (allowed.startsWith('*.')) {
+            const rootDomain = allowed.slice(2);
+            return origin.endsWith(rootDomain) || origin === `https://${rootDomain}`;
+          }
+          return false;
+        });
+
+      if (isAllowed) {
         return callback(null, true);
       }
 
@@ -42,12 +53,19 @@ app.use(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie', 'x-razorpay-signature'],
   })
 );
 
-// Parsers with safe production payload limits
-app.use(express.json({ limit: '5mb' }));
+// Parsers with safe production payload limits and rawBody preservation for webhooks
+app.use(
+  express.json({
+    limit: '5mb',
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser(env.COOKIE_SECRET));
 

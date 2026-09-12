@@ -8,15 +8,20 @@
   ],
   "scripts": {
     "dev": "dotenv -e .env -- concurrently \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "build:api": "npm run build --workspace=apps/api",
+    "build:web": "npm run build --workspace=apps/web",
+    "start:api": "npm run start --workspace=apps/api",
+    "prisma:generate": "prisma generate",
+    "test": "npm run test --workspace=apps/api"
   },
   "devDependencies": {
     "concurrently": "^10.0.5",
-    "dotenv-cli": "^11.0.0",
-    "prisma": "^5.22.0"
+    "dotenv-cli": "^11.0.0"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
-    "mongodb": "^7.6.0"
+    "mongodb": "^7.6.0",
+    "prisma": "^5.22.0"
   }
 }

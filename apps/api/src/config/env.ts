@@ -1,13 +1,16 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env from workspace root or local directory
-dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
+// Load .env from workspace root or current working directory
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
 dotenv.config(); // fallback
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '5000', 10),
+  HOST: process.env.HOST || '0.0.0.0',
   DATABASE_URL: process.env.DATABASE_URL || '',
   JWT_SECRET: process.env.JWT_SECRET || 'bazaarone_super_secret_jwt_key_2026_dev',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',

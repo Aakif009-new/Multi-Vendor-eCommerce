@@ -8,9 +8,12 @@ let server: Server | null = null;
 async function bootstrap() {
   await connectDB();
 
-  server = app.listen(env.PORT, () => {
-    console.log(`🚀 [BazaarOne API]: Server is running at http://localhost:${env.PORT}`);
-    console.log(`🔗 [BazaarOne API]: Health check at http://localhost:${env.PORT}/api/health`);
+  const PORT = env.PORT;
+  const HOST = process.env.HOST || '0.0.0.0';
+
+  server = app.listen(PORT, HOST, () => {
+    console.log(`🚀 [BazaarOne API]: Server is running at http://${HOST}:${PORT}`);
+    console.log(`🔗 [BazaarOne API]: Health check at http://${HOST}:${PORT}/api/health`);
   });
 
   const handleShutdown = async (signal: string) => {

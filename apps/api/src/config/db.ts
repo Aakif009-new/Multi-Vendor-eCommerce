@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { env } from './env';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -8,6 +9,11 @@ declare global {
 export const prisma =
   globalThis.prismaGlobal ??
   new PrismaClient({
+    datasources: {
+      db: {
+        url: env.DATABASE_URL || process.env.DATABASE_URL,
+      },
+    },
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   });
 

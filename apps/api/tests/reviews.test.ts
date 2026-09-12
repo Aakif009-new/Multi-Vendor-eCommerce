@@ -116,6 +116,7 @@ describe('Product Reviews & Verified Purchase Eligibility', () => {
         status: 'DELIVERED',
         paymentStatus: 'PAID',
         totalAmount: 2400,
+        razorpayOrderId: `order_test_rev_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       },
     });
     orderId = order.id;

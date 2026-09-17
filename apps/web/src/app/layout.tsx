@@ -5,6 +5,11 @@ import { AuthProvider } from '@/context/AuthContext';
 export const metadata = {
   title: 'BazaarOne — Multi-Vendor Marketplace for Local Businesses',
   description: 'A modern, production-grade Multi-Vendor E-Commerce platform empowering local artisans and neighborhood shop owners.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

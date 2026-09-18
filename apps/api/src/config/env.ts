@@ -33,3 +33,16 @@ export const env = {
   RAZORPAY_WEBHOOK_SECRET:
     process.env.RAZORPAY_WEBHOOK_SECRET || 'bazaarone_razorpay_webhook_secret_2026',
 };
+
+// Production Security Validation Check
+if (env.NODE_ENV === 'production') {
+  if (!process.env.DATABASE_URL) {
+    console.error('🚨 [Security Alert]: DATABASE_URL is missing in production environment!');
+  }
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'bazaarone_super_secret_jwt_key_2026_dev') {
+    console.warn('⚠️ [Security Warning]: Using default JWT_SECRET in production. Ensure a strong random secret is set in Render Dashboard.');
+  }
+  if (!process.env.COOKIE_SECRET || process.env.COOKIE_SECRET === 'bazaarone_cookie_secret_key') {
+    console.warn('⚠️ [Security Warning]: Using default COOKIE_SECRET in production. Ensure a strong random secret is set in Render Dashboard.');
+  }
+}

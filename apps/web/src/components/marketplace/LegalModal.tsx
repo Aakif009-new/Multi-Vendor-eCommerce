@@ -47,26 +47,26 @@ export const LegalModal: React.FC<LegalModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/80 backdrop-blur-sm animate-fade-in text-left">
-      <div className="relative w-full max-w-3xl max-h-[90vh] bg-white rounded-3xl shadow-2xl border border-surface-200 overflow-hidden flex flex-col animate-slide-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-surface-950/80 backdrop-blur-sm animate-fade-in text-left">
+      <div className="relative w-full max-w-3xl max-h-[92vh] sm:max-h-[90vh] bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-surface-200 overflow-hidden flex flex-col animate-slide-up">
         {/* Header */}
-        <div className="p-6 bg-surface-900 text-white flex items-center justify-between border-b border-surface-800 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30">
+        <div className="p-4 sm:p-6 bg-surface-900 text-white flex items-center justify-between border-b border-surface-800 shrink-0 gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30 shrink-0">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <div>
-              <h2 className="font-display font-black text-lg tracking-tight">
+            <div className="min-w-0">
+              <h2 className="font-display font-black text-base sm:text-lg tracking-tight truncate">
                 BazaarOne Legal & Security Center
               </h2>
-              <p className="text-xs text-surface-400">
+              <p className="text-[11px] sm:text-xs text-surface-400 truncate">
                 Compliance, Data Privacy, Terms of Service & Consumer Protection
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-surface-400 hover:text-white hover:bg-surface-800 transition-colors"
+            className="p-2 rounded-xl text-surface-400 hover:text-white hover:bg-surface-800 transition-colors shrink-0"
             aria-label="Close dialog"
           >
             <X className="h-5 w-5" />
@@ -74,10 +74,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1.5 px-6 py-2.5 bg-surface-50 border-b border-surface-200 overflow-x-auto text-xs shrink-0 no-scrollbar">
+        <div className="flex items-center gap-1.5 px-3 sm:px-6 py-2.5 bg-surface-50 border-b border-surface-200 overflow-x-auto text-xs shrink-0 scrollbar-none overscroll-contain">
           <button
             onClick={() => setActiveTab('privacy')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               activeTab === 'privacy'
                 ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-surface-600 hover:bg-surface-200/70'
@@ -87,7 +87,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('terms')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               activeTab === 'terms'
                 ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-surface-600 hover:bg-surface-200/70'
@@ -97,7 +97,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('refund')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               activeTab === 'refund'
                 ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-surface-600 hover:bg-surface-200/70'
@@ -107,7 +107,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('cookies')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               activeTab === 'cookies'
                 ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-surface-600 hover:bg-surface-200/70'
@@ -117,7 +117,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('data-request')}
-            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               activeTab === 'data-request'
                 ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-surface-600 hover:bg-surface-200/70'
@@ -128,7 +128,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 md:p-8 overflow-y-auto space-y-6 text-surface-700 text-xs leading-relaxed flex-1">
+        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto space-y-6 text-surface-700 text-xs leading-relaxed flex-1 custom-scrollbar overscroll-contain">
           {/* TAB 1: PRIVACY POLICY */}
           {activeTab === 'privacy' && (
             <div className="space-y-4">
@@ -316,7 +316,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                     Under data protection regulations, you have the right to request a full copy of your personal data or request permanent deletion of your account and associated records:
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     <button
                       type="button"
                       onClick={() => setDataRequestType('export')}

@@ -46,12 +46,12 @@ export const ProductReviewModal: React.FC<ProductReviewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/60 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-surface-950/60 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up text-left max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="p-5 border-b border-surface-200 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-surface-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
+            <div className="p-2 rounded-xl bg-amber-50 text-amber-600 shrink-0">
               <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
             </div>
             <div>
@@ -59,13 +59,13 @@ export const ProductReviewModal: React.FC<ProductReviewModalProps> = ({
               <p className="text-xs text-surface-500">Share your experience with this artisan product</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-100 text-surface-500">
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 text-surface-500" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {isSuccess ? (
-          <div className="p-8 text-center space-y-4">
+          <div className="p-6 sm:p-8 text-center space-y-4 flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
             <div className="h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8" />
             </div>
@@ -78,7 +78,7 @@ export const ProductReviewModal: React.FC<ProductReviewModalProps> = ({
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar overscroll-contain">
             {error && (
               <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                 {error}

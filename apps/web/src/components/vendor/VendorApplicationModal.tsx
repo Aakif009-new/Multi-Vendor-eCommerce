@@ -44,27 +44,28 @@ export const VendorApplicationModal: React.FC<VendorApplicationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/60 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-surface-950/60 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up text-left max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-white relative">
+        <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4 sm:p-6 text-white relative shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors"
+            className="absolute top-4 sm:top-5 right-4 sm:right-5 p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors"
+            aria-label="Close"
           >
             <X className="h-4 w-4" />
           </button>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 text-[11px] font-semibold mb-2">
             <Store className="h-3.5 w-3.5" /> Merchant Onboarding
           </div>
-          <h3 className="font-display text-xl font-extrabold">Apply for a Vendor Storefront</h3>
+          <h3 className="font-display text-lg sm:text-xl font-extrabold">Apply for a Vendor Storefront</h3>
           <p className="text-xs text-white/90 mt-1">
             Join BazaarOne to showcase and sell your artisanal products nationwide.
           </p>
         </div>
 
         {/* Form Body */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto custom-scrollbar overscroll-contain flex-1">
           {isSuccess ? (
             <div className="p-6 text-center space-y-3">
               <div className="h-12 w-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">

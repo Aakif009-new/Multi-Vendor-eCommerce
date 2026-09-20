@@ -62,7 +62,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({ user, onLogout
       </CardHeader>
 
       <CardContent className="space-y-4 pt-2">
-        <div className="grid grid-cols-2 gap-2 text-left">
+        <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 text-left">
           <div className="p-3 rounded-xl bg-surface-50 border border-surface-200/80">
             <span className="text-[10px] font-bold uppercase tracking-wider text-surface-400 block mb-1">
               Account Status
@@ -96,7 +96,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({ user, onLogout
         </div>
       </CardContent>
 
-      <CardFooter className="flex justify-between items-center">
+      <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <span className="text-[11px] text-surface-400 font-medium">
           Session secured via HTTP-only token
         </span>

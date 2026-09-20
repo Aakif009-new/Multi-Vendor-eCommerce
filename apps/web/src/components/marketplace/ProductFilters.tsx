@@ -44,7 +44,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
   );
 
   return (
-    <aside className="w-full bg-white rounded-2xl border border-surface-200/80 p-5 space-y-6 text-left shadow-subtle">
+    <aside className="w-full bg-white rounded-2xl border border-surface-200/80 p-4 sm:p-5 space-y-5 sm:space-y-6 text-left shadow-subtle overscroll-contain">
       {/* Header with Clear All */}
       <div className="flex items-center justify-between pb-3 border-b border-surface-100">
         <h3 className="font-display text-sm font-bold text-surface-900 flex items-center gap-2">
@@ -54,7 +54,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
         {hasActiveFilters && (
           <button
             onClick={onReset}
-            className="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-1 transition-colors"
+            className="text-xs text-brand-600 hover:text-brand-700 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
           >
             <RotateCcw className="h-3 w-3" />
             Clear all
@@ -63,23 +63,28 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       </div>
 
       {/* 1. Stores / Merchants Filter */}
-      <div className="space-y-3">
-        <span className="text-xs font-bold uppercase tracking-wider text-surface-500 flex items-center gap-1.5">
-          <Store className="h-3.5 w-3.5 text-surface-400" /> Stores
-        </span>
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-surface-500 flex items-center gap-1.5">
+            <Store className="h-3.5 w-3.5 text-surface-400" /> Stores
+          </span>
+          {vendors.length > 0 && (
+            <span className="text-[10px] text-surface-400 font-medium">({vendors.length})</span>
+          )}
+        </div>
 
-        <div className="space-y-1">
+        <div className="space-y-1 max-h-40 sm:max-h-44 overflow-y-auto pr-1.5 custom-scrollbar overscroll-contain">
           <button
             type="button"
             onClick={() => onVendorChange('')}
-            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               selectedVendor === ''
                 ? 'bg-brand-50 text-brand-700 font-semibold'
                 : 'text-surface-600 hover:bg-surface-50 hover:text-surface-900'
             }`}
           >
             <span>All Stores</span>
-            {selectedVendor === '' && <Check className="h-3.5 w-3.5 text-brand-600" />}
+            {selectedVendor === '' && <Check className="h-3.5 w-3.5 text-brand-600 shrink-0" />}
           </button>
 
           {vendors.map((v) => {
@@ -89,14 +94,14 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
                 key={v.id}
                 type="button"
                 onClick={() => onVendorChange(isSelected ? '' : v.id)}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
                   isSelected
                     ? 'bg-brand-50 text-brand-700 font-semibold'
                     : 'text-surface-600 hover:bg-surface-50 hover:text-surface-900'
                 }`}
               >
-                <span className="truncate">{v.businessName}</span>
-                {isSelected && <Check className="h-3.5 w-3.5 text-brand-600 shrink-0" />}
+                <span className="truncate text-left">{v.businessName}</span>
+                {isSelected && <Check className="h-3.5 w-3.5 text-brand-600 shrink-0 ml-1.5" />}
               </button>
             );
           })}
@@ -104,23 +109,28 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       </div>
 
       {/* 2. Categories Filter */}
-      <div className="space-y-3 pt-3 border-t border-surface-100">
-        <span className="text-xs font-bold uppercase tracking-wider text-surface-500 block">
-          Categories
-        </span>
+      <div className="space-y-2.5 pt-3 border-t border-surface-100">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-surface-500 block">
+            Categories
+          </span>
+          {categories.length > 0 && (
+            <span className="text-[10px] text-surface-400 font-medium">({categories.length})</span>
+          )}
+        </div>
 
-        <div className="space-y-1 max-h-56 overflow-y-auto pr-1 scrollbar-none">
+        <div className="space-y-1 max-h-44 sm:max-h-48 overflow-y-auto pr-1.5 custom-scrollbar overscroll-contain">
           <button
             type="button"
             onClick={() => onCategoryChange('')}
-            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
               selectedCategory === ''
                 ? 'bg-brand-50 text-brand-700 font-semibold'
                 : 'text-surface-600 hover:bg-surface-50 hover:text-surface-900'
             }`}
           >
             <span>All Categories</span>
-            {selectedCategory === '' && <Check className="h-3.5 w-3.5 text-brand-600" />}
+            {selectedCategory === '' && <Check className="h-3.5 w-3.5 text-brand-600 shrink-0" />}
           </button>
 
           {categories.map((cat) => {
@@ -130,14 +140,14 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => onCategoryChange(isSelected ? '' : cat.slug)}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
                   isSelected
                     ? 'bg-brand-50 text-brand-700 font-semibold'
                     : 'text-surface-600 hover:bg-surface-50 hover:text-surface-900'
                 }`}
               >
-                <span className="truncate">{cat.name}</span>
-                {isSelected && <Check className="h-3.5 w-3.5 text-brand-600 shrink-0" />}
+                <span className="truncate text-left">{cat.name}</span>
+                {isSelected && <Check className="h-3.5 w-3.5 text-brand-600 shrink-0 ml-1.5" />}
               </button>
             );
           })}
@@ -145,7 +155,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
       </div>
 
       {/* 3. Price Range Filter */}
-      <div className="space-y-3 pt-3 border-t border-surface-100">
+      <div className="space-y-3 pt-3 border-t border-surface-100 pb-1">
         <span className="text-xs font-bold uppercase tracking-wider text-surface-500 block">
           Price Range (₹)
         </span>
@@ -181,7 +191,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
               onMinPriceChange('');
               onMaxPriceChange('1000');
             }}
-            className="px-2 py-1 rounded-md bg-surface-100 hover:bg-surface-200 text-surface-600 text-[10px] font-medium transition-colors"
+            className="px-2 py-1 rounded-md bg-surface-100 hover:bg-surface-200 text-surface-600 text-[10px] font-medium transition-colors cursor-pointer"
           >
             Under ₹1k
           </button>
@@ -191,7 +201,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
               onMinPriceChange('1000');
               onMaxPriceChange('5000');
             }}
-            className="px-2 py-1 rounded-md bg-surface-100 hover:bg-surface-200 text-surface-600 text-[10px] font-medium transition-colors"
+            className="px-2 py-1 rounded-md bg-surface-100 hover:bg-surface-200 text-surface-600 text-[10px] font-medium transition-colors cursor-pointer"
           >
             ₹1k – ₹5k
           </button>
@@ -201,7 +211,7 @@ export const ProductFilters: React.FC<ProductFiltersProps> = ({
               onMinPriceChange('5000');
               onMaxPriceChange('');
             }}
-            className="px-2 py-1 rounded-md bg-surface-100 hover:bg-surface-200 text-surface-600 text-[10px] font-medium transition-colors"
+            className="px-2 py-1 rounded-md bg-surface-100 hover:bg-surface-200 text-surface-600 text-[10px] font-medium transition-colors cursor-pointer"
           >
             ₹5k+
           </button>

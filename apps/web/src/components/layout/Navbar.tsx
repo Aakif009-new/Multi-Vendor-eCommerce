@@ -92,19 +92,19 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-surface-200/70 transition-all">
       {/* 1. Subtle Utility Topbar */}
-      <div className="border-b border-surface-100 bg-surface-50/80 text-[11px] text-surface-600 py-1.5 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 font-medium">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>Curated products &bull; Trusted independent merchants</span>
+      <div className="border-b border-surface-100 bg-surface-50/80 text-[11px] text-surface-600 py-1.5 px-3 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 font-medium truncate min-w-0">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">Curated products &bull; Trusted merchants</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {userRole ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-surface-200 font-semibold text-surface-700 text-[10px]">
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${
+                    className={`h-1.5 w-1.5 rounded-full shrink-0 ${
                       userRole === 'ADMIN'
                         ? 'bg-purple-600'
                         : userRole === 'VENDOR'
@@ -112,33 +112,33 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'bg-emerald-500'
                     }`}
                   />
-                  {userRole} Account ({userName?.split(' ')[0] || 'User'})
+                  <span className="truncate max-w-[120px]">{userRole} ({userName?.split(' ')[0] || 'User'})</span>
                 </span>
               </div>
             ) : (
-              <span className="text-surface-500 font-medium">Welcome to BazaarOne</span>
+              <span className="text-surface-500 font-medium hidden xs:inline">Welcome to BazaarOne</span>
             )}
           </div>
         </div>
       </div>
 
       {/* 2. Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4 sm:gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-6">
           {/* Brand Logo */}
           <Link
             href="/"
             onClick={() => onSelectView && onSelectView('customer')}
-            className="flex items-center gap-2.5 select-none shrink-0 group"
+            className="flex items-center gap-2 sm:gap-2.5 select-none shrink-0 group"
           >
-            <div className="h-9 w-9 rounded-xl bg-surface-900 flex items-center justify-center text-white shadow-xs group-hover:bg-brand-600 transition-colors">
-              <Store className="h-5 w-5 text-white" />
+            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-surface-900 flex items-center justify-center text-white shadow-xs group-hover:bg-brand-600 transition-colors shrink-0">
+              <Store className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
             <div className="flex flex-col text-left">
-              <span className="font-display text-lg font-black tracking-tight text-surface-900 leading-none">
+              <span className="font-display text-base sm:text-lg font-black tracking-tight text-surface-900 leading-none">
                 BAZAAR<span className="text-brand-600 font-medium">ONE</span>
               </span>
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-surface-400 mt-0.5">
+              <span className="text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider text-surface-400 mt-0.5">
                 Marketplace
               </span>
             </div>
@@ -160,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {search && (
                 <button
                   onClick={() => onSearchChange('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-surface-400 hover:text-surface-700"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-surface-400 hover:text-surface-700 cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -171,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* Right Action Icons & Profile */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2.5">
             {/* Customer Navigation */}
             {(!userRole || userRole === 'CUSTOMER') && (
               <>
@@ -180,13 +180,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={onOpenWishlist}
-                    className="relative p-2.5 rounded-xl text-surface-600 hover:text-rose-600 hover:bg-rose-50/60 transition-colors"
+                    className="relative p-2 rounded-xl text-surface-600 hover:text-rose-600 hover:bg-rose-50/60 transition-colors cursor-pointer"
                     title="Wishlist"
                     aria-label="View Saved Wishlist"
                   >
                     <Heart className="h-5 w-5" />
                     {wishlistCount > 0 && (
-                      <span className="absolute 0.5 top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                      <span className="absolute 0.5 top-0.5 right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
                         {wishlistCount}
                       </span>
                     )}
@@ -198,13 +198,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={onOpenCart}
-                    className="relative p-2.5 rounded-xl text-surface-600 hover:text-brand-600 hover:bg-brand-50/60 transition-colors"
+                    className="relative p-2 rounded-xl text-surface-600 hover:text-brand-600 hover:bg-brand-50/60 transition-colors cursor-pointer"
                     title="Shopping Cart"
                     aria-label="View Shopping Cart"
                   >
                     <ShoppingBag className="h-5 w-5" />
                     {cartCount > 0 && (
-                      <span className="absolute 0.5 top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-brand-600 text-white text-[10px] font-bold flex items-center justify-center">
+                      <span className="absolute 0.5 top-0.5 right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-brand-600 text-white text-[10px] font-bold flex items-center justify-center">
                         {cartCount}
                       </span>
                     )}
@@ -215,15 +215,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Authenticated User Account Chip / Sign In */}
             {userRole ? (
-              <div className="flex items-center gap-1.5 pl-2 border-l border-surface-200">
+              <div className="flex items-center gap-1 sm:gap-1.5 pl-1.5 sm:pl-2 border-l border-surface-200">
                 <button
                   type="button"
                   onClick={onOpenAccount}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-surface-50 hover:bg-surface-100 border border-surface-200/80 text-left transition-all cursor-pointer group"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 rounded-xl bg-surface-50 hover:bg-surface-100 border border-surface-200/80 text-left transition-all cursor-pointer group"
                   title="Open Customer Account Hub"
                 >
                   <div
-                    className={`h-7 w-7 rounded-lg text-white flex items-center justify-center text-xs font-bold shadow-xs ${
+                    className={`h-7 w-7 rounded-lg text-white flex items-center justify-center text-xs font-bold shadow-xs shrink-0 ${
                       userRole === 'ADMIN'
                         ? 'bg-purple-600'
                         : userRole === 'VENDOR'
@@ -248,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     type="button"
                     onClick={onLogout}
                     title="Sign Out"
-                    className="p-2 rounded-xl text-surface-400 hover:text-rose-600 hover:bg-rose-50/60 transition-colors"
+                    className="p-1.5 sm:p-2 rounded-xl text-surface-400 hover:text-rose-600 hover:bg-rose-50/60 transition-colors cursor-pointer"
                     aria-label="Sign Out"
                   >
                     <LogOut className="h-4 w-4" />
@@ -256,22 +256,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2 pl-2 border-l border-surface-200">
-                <Button variant="ghost" size="sm" onClick={onOpenAuthModal}>
+              <div className="flex items-center gap-1.5 pl-1.5 sm:pl-2 border-l border-surface-200">
+                <Button variant="ghost" size="sm" onClick={onOpenAuthModal} className="text-xs px-2.5 py-1">
                   Sign In
                 </Button>
-                <Button variant="primary" size="sm" onClick={onOpenAuthModal}>
+                <Button variant="primary" size="sm" onClick={onOpenAuthModal} className="text-xs px-2.5 py-1">
                   Register
                 </Button>
               </div>
             )}
 
             {/* Mobile Menu Hamburger */}
-            <div className="flex md:hidden items-center ml-1">
+            <div className="flex md:hidden items-center ml-0.5">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-xl text-surface-700 hover:bg-surface-100 transition-colors"
+                className="p-2 rounded-xl text-surface-700 hover:bg-surface-100 transition-colors cursor-pointer"
                 aria-label="Toggle mobile menu"
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -292,7 +292,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     key={cat.slug}
                     onClick={() => handleCategoryClick(cat.slug)}
-                    className={`px-3 py-1 rounded-lg whitespace-nowrap transition-colors select-none ${
+                    className={`px-3 py-1 rounded-lg whitespace-nowrap transition-colors select-none cursor-pointer ${
                       isActive
                         ? 'text-brand-600 font-bold bg-brand-50'
                         : 'hover:text-surface-900 hover:bg-surface-50'
@@ -309,7 +309,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* 4. Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-surface-200 bg-white p-4 space-y-4 text-left animate-slide-down shadow-xl">
+        <div className="md:hidden border-t border-surface-200 bg-white p-4 space-y-4 text-left animate-slide-down shadow-xl max-h-[calc(100vh-4.5rem)] overflow-y-auto overscroll-contain custom-scrollbar">
           {/* Mobile Search */}
           {onSearchChange && (
             <div className="relative">
@@ -339,7 +339,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onLogout();
                     setMobileMenuOpen(false);
                   }}
-                  className="text-xs text-rose-600 font-bold hover:underline"
+                  className="text-xs text-rose-600 font-bold hover:underline cursor-pointer"
                 >
                   Sign Out
                 </button>
@@ -362,7 +362,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       handleCategoryClick(cat.slug);
                       setMobileMenuOpen(false);
                     }}
-                    className={`text-left p-2 rounded-lg text-xs font-medium transition-colors ${
+                    className={`text-left p-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer min-h-[38px] ${
                       isActive ? 'bg-brand-50 text-brand-700 font-bold' : 'hover:bg-surface-50 text-surface-700'
                     }`}
                   >
@@ -382,7 +382,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenOrders();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-surface-50 text-surface-700 font-medium"
+                  className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-surface-50 text-surface-700 font-medium cursor-pointer"
                 >
                   <span className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-brand-600" /> My Orders
@@ -397,7 +397,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenAddresses();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-surface-50 text-surface-700 font-medium"
+                  className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-surface-50 text-surface-700 font-medium cursor-pointer"
                 >
                   <MapPin className="h-4 w-4 text-brand-600" /> Saved Addresses
                 </button>
@@ -409,7 +409,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onOpenAccount();
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-surface-50 text-surface-700 font-medium"
+                  className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-surface-50 text-surface-700 font-medium cursor-pointer"
                 >
                   <User className="h-4 w-4 text-brand-600" /> Account Settings
                 </button>
@@ -421,7 +421,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Link
               href="/vendor"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-xl bg-amber-50 text-amber-800 text-xs font-bold"
+              className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 text-amber-800 text-xs font-bold"
             >
               <Store className="h-4 w-4 text-amber-600" /> Go to Vendor Dashboard
             </Link>
@@ -431,7 +431,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-xl bg-purple-50 text-purple-800 text-xs font-bold"
+              className="flex items-center gap-2 p-3 rounded-xl bg-purple-50 text-purple-800 text-xs font-bold"
             >
               <Shield className="h-4 w-4 text-purple-600" /> Go to Admin Console
             </Link>

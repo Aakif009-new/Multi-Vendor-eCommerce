@@ -90,23 +90,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   return (
-    <div className="space-y-8 text-left">
+    <div className="space-y-6 sm:space-y-8 text-left">
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-purple-600/10 via-purple-500/5 to-transparent border border-purple-200/60 shadow-xs">
-        <div className="flex items-center gap-3.5">
-          <div className="h-12 w-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-600/20">
-            <Shield className="h-6 w-6" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-purple-600/10 via-purple-500/5 to-transparent border border-purple-200/60 shadow-xs">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center shadow-md shadow-purple-600/20 shrink-0">
+            <Shield className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-display text-xl font-extrabold text-surface-950">Super Admin Console</h2>
-              <Badge variant="admin" size="sm" dot>Platform Governance</Badge>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="font-display text-lg sm:text-xl font-extrabold text-surface-950 truncate">Super Admin Console</h2>
+              <Badge variant="admin" size="sm" dot className="shrink-0">Platform Governance</Badge>
             </div>
-            <p className="text-xs text-surface-500">Marketplace Metrics, Vendor Directory, Catalog Moderation & 100-Product Seeder</p>
+            <p className="text-xs text-surface-500 truncate">Marketplace Metrics, Vendor Directory, Catalog Moderation & 100-Product Seeder</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {onSeed100Products && (
             <Button
               variant="outline"
@@ -114,7 +114,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={handleTriggerSeed}
               isLoading={isSeeding}
               leftIcon={<Sparkles className="h-4 w-4 text-purple-600" />}
-              className="bg-white border-purple-200 hover:border-purple-300 text-purple-900 font-bold"
+              className="bg-white border-purple-200 hover:border-purple-300 text-purple-900 font-bold w-full sm:w-auto"
             >
               Reseed 100 Products
             </Button>
@@ -123,35 +123,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card variant="glass" className="p-4 space-y-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card variant="glass" className="p-3.5 sm:p-4 space-y-1">
           <span className="text-xs font-semibold text-surface-500">Verified Vendors</span>
-          <span className="text-2xl font-extrabold text-surface-950 flex items-center gap-2">
-            <Store className="h-5 w-5 text-amber-500" /> {vendors.length > 0 ? vendors.length : stats.totalVendors}
+          <span className="text-xl sm:text-2xl font-extrabold text-surface-950 flex items-center gap-2">
+            <Store className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 shrink-0" /> {vendors.length > 0 ? vendors.length : stats.totalVendors}
           </span>
         </Card>
-        <Card variant="glass" className="p-4 space-y-1">
+        <Card variant="glass" className="p-3.5 sm:p-4 space-y-1">
           <span className="text-xs font-semibold text-surface-500">Standard Categories</span>
-          <span className="text-2xl font-extrabold text-surface-950 flex items-center gap-2">
-            <Layers className="h-5 w-5 text-brand-600" /> {categories.length > 0 ? categories.length : stats.totalCategories}
+          <span className="text-xl sm:text-2xl font-extrabold text-surface-950 flex items-center gap-2">
+            <Layers className="h-4 w-4 sm:h-5 sm:w-5 text-brand-600 shrink-0" /> {categories.length > 0 ? categories.length : stats.totalCategories}
           </span>
         </Card>
-        <Card variant="glass" className="p-4 space-y-1">
+        <Card variant="glass" className="p-3.5 sm:p-4 space-y-1">
           <span className="text-xs font-semibold text-surface-500">Pending Applications</span>
-          <span className="text-2xl font-extrabold text-surface-950 flex items-center gap-2">
-            <Users className="h-5 w-5 text-purple-600" /> {applications.filter((a) => a.status === 'PENDING').length}
+          <span className="text-xl sm:text-2xl font-extrabold text-surface-950 flex items-center gap-2">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600 shrink-0" /> {applications.filter((a) => a.status === 'PENDING').length}
           </span>
         </Card>
-        <Card variant="glass" className="p-4 space-y-1">
+        <Card variant="glass" className="p-3.5 sm:p-4 space-y-1">
           <span className="text-xs font-semibold text-surface-500">Live Active Products</span>
-          <span className="text-2xl font-extrabold text-surface-950 flex items-center gap-2">
-            <Package className="h-5 w-5 text-emerald-600" /> {products.length > 0 ? products.length : stats.totalProducts}
+          <span className="text-xl sm:text-2xl font-extrabold text-surface-950 flex items-center gap-2">
+            <Package className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-600 shrink-0" /> {products.length > 0 ? products.length : stats.totalProducts}
           </span>
         </Card>
       </div>
 
       {/* Admin Module Tabs */}
-      <div className="flex justify-start">
+      <div className="flex justify-start w-full overflow-x-auto scrollbar-none overscroll-contain">
         <Tabs
           items={[
             { id: 'vendors', label: 'Approved Vendors', count: vendors.length || 4 },
@@ -167,20 +167,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Tab 0: Approved Vendors Directory */}
       {activeTab === 'vendors' && (
         <Card variant="glass" className="p-0 overflow-hidden">
-          <div className="p-5 border-b border-surface-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="p-4 sm:p-5 border-b border-surface-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <CardTitle className="text-base">Approved Multi-Vendor Merchant Directory</CardTitle>
               <CardDescription className="text-xs">
                 Real-time inventory and catalog distribution across verified marketplace vendors.
               </CardDescription>
             </div>
-            <Badge variant="success" size="sm">
+            <Badge variant="success" size="sm" className="self-start sm:self-auto">
               4 Active Stores
             </Badge>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto custom-scrollbar overscroll-contain">
+            <table className="w-full text-left text-xs min-w-[620px]">
               <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200">
                 <tr>
                   <th className="py-3 px-4">Merchant Store</th>
@@ -242,7 +242,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Tab 1: Vendor Applications Review */}
       {activeTab === 'applications' && (
         <Card variant="glass" className="p-0 overflow-hidden">
-          <div className="p-5 border-b border-surface-200">
+          <div className="p-4 sm:p-5 border-b border-surface-200">
             <CardTitle className="text-base">Merchant Onboarding Queue</CardTitle>
             <CardDescription className="text-xs">
               Review and approve storefronts to sell on the marketplace.
@@ -256,8 +256,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <p className="text-xs text-surface-400 mt-1">All applicant storefronts have been evaluated.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto custom-scrollbar overscroll-contain">
+              <table className="w-full text-left text-xs min-w-[620px]">
                 <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200">
                   <tr>
                     <th className="py-3 px-4">Business Name</th>
@@ -325,16 +325,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Tab 2: Product Moderation */}
       {activeTab === 'products' && (
         <Card variant="glass" className="p-0 overflow-hidden">
-          <div className="p-5 border-b border-surface-200">
+          <div className="p-4 sm:p-5 border-b border-surface-200">
             <CardTitle className="text-base">Platform Product Moderation</CardTitle>
             <CardDescription className="text-xs">
               Audit listings across all vendors and toggle catalog visibility.
             </CardDescription>
           </div>
 
-          <div className="overflow-x-auto max-h-96 overflow-y-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200 sticky top-0">
+          <div className="overflow-x-auto max-h-96 overflow-y-auto custom-scrollbar overscroll-contain">
+            <table className="w-full text-left text-xs min-w-[620px]">
+              <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200 sticky top-0 bg-white/95 backdrop-blur-xs z-10">
                 <tr>
                   <th className="py-3 px-4">Product</th>
                   <th className="py-3 px-4">Merchant</th>
@@ -396,43 +396,44 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Tab 3: Taxonomy (Categories & Brands) */}
       {activeTab === 'taxonomy' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {/* Categories Manager */}
-          <Card variant="glass" className="space-y-4">
-            <CardHeader>
+          <Card variant="glass" className="space-y-4 p-4 sm:p-6">
+            <CardHeader className="p-0">
               <CardTitle className="text-base">12 Standard Categories ({categories.length})</CardTitle>
               <CardDescription className="text-xs">
                 Manage global taxonomy tree.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={handleAddCategory} className="flex gap-2">
+            <CardContent className="space-y-4 p-0">
+              <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-2">
                 <Input
                   placeholder="New Category Name"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
                   required
+                  className="flex-1"
                 />
-                <Button type="submit" variant="primary" size="md">
+                <Button type="submit" variant="primary" size="md" className="shrink-0">
                   Add
                 </Button>
               </form>
 
-              <div className="divide-y divide-surface-100 max-h-60 overflow-y-auto">
+              <div className="divide-y divide-surface-100 max-h-60 overflow-y-auto custom-scrollbar overscroll-contain pr-1">
                 {categories.map((c) => (
-                  <div key={c.id} className="py-2 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-surface-900 text-xs block">{c.name}</span>
-                      <span className="text-[10px] text-surface-400">Slug: {c.slug}</span>
+                  <div key={c.id} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="font-bold text-surface-900 text-xs block truncate">{c.name}</span>
+                      <span className="text-[10px] text-surface-400 truncate">Slug: {c.slug}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       <Badge variant={c.isActive ? 'success' : 'neutral'} size="sm">
                         {c.isActive ? 'Active' : 'Deactivated'}
                       </Badge>
                       {c.isActive && (
                         <button
                           onClick={() => onDeactivateCategory(c.id)}
-                          className="text-surface-400 hover:text-rose-600 p-1"
+                          className="text-surface-400 hover:text-rose-600 p-1 rounded-lg transition-colors"
                           title="Deactivate safely"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -446,34 +447,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </Card>
 
           {/* Brands Manager */}
-          <Card variant="glass" className="space-y-4">
-            <CardHeader>
+          <Card variant="glass" className="space-y-4 p-4 sm:p-6">
+            <CardHeader className="p-0">
               <CardTitle className="text-base">Verified Merchant Brands ({brands.length})</CardTitle>
               <CardDescription className="text-xs">
                 Register verified artisan guilds and brands.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={handleAddBrand} className="flex gap-2">
+            <CardContent className="space-y-4 p-0">
+              <form onSubmit={handleAddBrand} className="flex flex-col sm:flex-row gap-2">
                 <Input
                   placeholder="New Brand Name"
                   value={newBrandName}
                   onChange={(e) => setNewBrandName(e.target.value)}
                   required
+                  className="flex-1"
                 />
-                <Button type="submit" variant="primary" size="md">
+                <Button type="submit" variant="primary" size="md" className="shrink-0">
                   Add
                 </Button>
               </form>
 
-              <div className="divide-y divide-surface-100 max-h-60 overflow-y-auto">
+              <div className="divide-y divide-surface-100 max-h-60 overflow-y-auto custom-scrollbar overscroll-contain pr-1">
                 {brands.map((b) => (
-                  <div key={b.id} className="py-2 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-surface-900 text-xs block">{b.name}</span>
-                      <span className="text-[10px] text-surface-400">Slug: {b.slug}</span>
+                  <div key={b.id} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <span className="font-bold text-surface-900 text-xs block truncate">{b.name}</span>
+                      <span className="text-[10px] text-surface-400 truncate">Slug: {b.slug}</span>
                     </div>
-                    <Badge variant={b.isActive ? 'success' : 'neutral'} size="sm">
+                    <Badge variant={b.isActive ? 'success' : 'neutral'} size="sm" className="shrink-0">
                       {b.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>

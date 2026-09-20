@@ -160,28 +160,28 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-surface-950/70 backdrop-blur-md animate-fade-in text-left">
-      <div className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-surface-950/70 backdrop-blur-md animate-fade-in text-left">
+      <div className="relative w-full max-w-4xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up flex flex-col max-h-[92vh] sm:max-h-[88vh]">
         {/* Header Bar */}
-        <div className="p-5 sm:p-6 bg-linear-to-r from-surface-900 to-surface-950 text-white flex items-center justify-between border-b border-surface-800">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-brand-500/20 border border-brand-500/30 text-brand-400 flex items-center justify-center font-display font-extrabold text-xl shadow-inner">
+        <div className="p-4 sm:p-6 bg-linear-to-r from-surface-900 to-surface-950 text-white flex items-center justify-between border-b border-surface-800 gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-brand-500/20 border border-brand-500/30 text-brand-400 flex items-center justify-center font-display font-extrabold text-base sm:text-xl shadow-inner shrink-0">
               {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display text-lg sm:text-xl font-black tracking-tight">{user.name}</h2>
-                <Badge variant="brand" size="sm" className="bg-brand-500/20 text-brand-300 border-brand-500/30">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display text-base sm:text-xl font-black tracking-tight truncate max-w-[180px] sm:max-w-none">{user.name}</h2>
+                <Badge variant="brand" size="sm" className="bg-brand-500/20 text-brand-300 border-brand-500/30 shrink-0">
                   {user.role}
                 </Badge>
               </div>
-              <p className="text-xs text-surface-400 flex items-center gap-2 mt-0.5">
-                <Mail className="h-3 w-3" /> {user.email}
+              <p className="text-[11px] sm:text-xs text-surface-400 flex items-center gap-1.5 sm:gap-2 mt-0.5 flex-wrap truncate">
+                <span className="flex items-center gap-1 truncate"><Mail className="h-3 w-3 shrink-0" /> {user.email}</span>
                 {user.createdAt && (
                   <>
-                    <span>•</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> Member since {new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                    <span className="hidden xs:inline">•</span>
+                    <span className="hidden xs:flex items-center gap-1">
+                      <Calendar className="h-3 w-3 shrink-0" /> Member since {new Date(user.createdAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
                     </span>
                   </>
                 )}
@@ -190,14 +190,15 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors shrink-0"
+            aria-label="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 sm:gap-2 px-4 sm:px-6 py-2.5 bg-surface-50 border-b border-surface-200 overflow-x-auto scrollbar-none text-xs font-bold">
+        <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 bg-surface-50 border-b border-surface-200 overflow-x-auto scrollbar-none text-xs font-bold shrink-0 overscroll-contain">
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-3 py-2 rounded-xl flex items-center gap-2 shrink-0 transition-all ${
@@ -256,12 +257,12 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
         </div>
 
         {/* Tab Content Body */}
-        <div className="p-5 sm:p-6 flex-1 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-6 custom-scrollbar overscroll-contain">
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Metrics Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
                 <div className="p-4 rounded-2xl bg-surface-50 border border-surface-200">
                   <div className="flex items-center justify-between text-surface-500 mb-1">
                     <span className="text-[11px] font-bold uppercase tracking-wider">Total Orders</span>
@@ -576,7 +577,7 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
               {showAddAddressForm ? (
                 <form onSubmit={handleAddressSubmit} className="p-4 rounded-2xl bg-surface-50 border border-surface-200 space-y-3">
                   <h4 className="font-bold text-xs text-surface-900">Add New Delivery Address</h4>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="Address Title"
                       value={newTitle}
@@ -599,7 +600,7 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
                     placeholder="Flat / House No., Street, Area"
                     required
                   />
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <Input
                       label="City"
                       value={newCity}
@@ -651,7 +652,7 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
                     addresses.map((addr) => (
                       <div
                         key={addr.id}
-                        className="p-4 rounded-2xl bg-surface-50 border border-surface-200 flex items-center justify-between gap-3"
+                        className="p-4 rounded-2xl bg-surface-50 border border-surface-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                       >
                         <div className="space-y-1 text-xs">
                           <div className="flex items-center gap-2">
@@ -668,7 +669,7 @@ export const CustomerAccountModal: React.FC<CustomerAccountModalProps> = ({
                           <p className="text-surface-500 text-[11px]">Phone: {addr.phone}</p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
                           {!addr.isDefault && (
                             <Button
                               variant="outline"

@@ -195,7 +195,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
         {confirmedOrder ? (
           /* Confirmation Receipt View */
-          <div className="p-6 md:p-8 text-center space-y-5 animate-fade-in overflow-y-auto">
+          <div className="p-5 sm:p-8 text-center space-y-5 animate-fade-in overflow-y-auto custom-scrollbar overscroll-contain">
             <div className="h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-xs">
               <CheckCircle2 className="h-8 w-8" />
             </div>
@@ -221,21 +221,21 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <span>Payment Method:</span>
                 <span className="font-semibold text-emerald-700">Razorpay Test Mode</span>
               </div>
-              <div className="flex justify-between text-surface-600">
-                <span>Delivery Address:</span>
-                <span className="font-medium text-surface-800 truncate max-w-[220px]">
+              <div className="flex flex-col sm:flex-row sm:justify-between text-surface-600 gap-0.5 sm:gap-2">
+                <span className="shrink-0">Delivery Address:</span>
+                <span className="font-medium text-surface-800 break-words text-left sm:text-right">
                   {confirmedOrder.address?.street}, {confirmedOrder.address?.city} - {confirmedOrder.address?.postalCode}
                 </span>
               </div>
             </div>
 
-            <Button variant="primary" size="lg" className="w-full" onClick={onClose}>
+            <Button variant="primary" size="lg" className="w-full cursor-pointer" onClick={onClose}>
               Continue Shopping
             </Button>
           </div>
         ) : (
           /* Checkout Review & Pay */
-          <div className="p-5 sm:p-6 space-y-5 overflow-y-auto">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto custom-scrollbar overscroll-contain">
             {/* Razorpay Test Mode Banner */}
             <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
               <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
@@ -262,7 +262,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAddressManager}
-                  className="text-xs font-bold text-brand-600 hover:text-brand-700"
+                  className="text-xs font-bold text-brand-600 hover:text-brand-700 cursor-pointer"
                 >
                   Manage Addresses
                 </button>
@@ -300,16 +300,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <Package className="h-3.5 w-3.5 text-brand-600" /> Items in Order ({cart.totalItems})
               </span>
 
-              <div className="divide-y divide-surface-100 max-h-36 overflow-y-auto rounded-2xl border border-surface-200 p-3 bg-surface-50/50">
+              <div className="divide-y divide-surface-100 max-h-36 overflow-y-auto custom-scrollbar rounded-2xl border border-surface-200 p-3 bg-surface-50/50">
                 {cart.items.map((item) => (
-                  <div key={item.id} className="py-1.5 flex items-center justify-between text-xs">
-                    <div className="truncate max-w-[240px]">
-                      <span className="font-semibold text-surface-900">{item.product.name}</span>
-                      <span className="text-surface-400 text-[10px] block">
+                  <div key={item.id} className="py-1.5 flex items-center justify-between text-xs gap-2">
+                    <div className="truncate min-w-0 flex-1">
+                      <span className="font-semibold text-surface-900 block truncate">{item.product.name}</span>
+                      <span className="text-surface-400 text-[10px] block truncate">
                         Sold by: {item.product.vendor?.businessName || 'Partner'} • Qty: {item.quantity}
                       </span>
                     </div>
-                    <span className="font-extrabold text-surface-950">
+                    <span className="font-extrabold text-surface-950 shrink-0">
                       ₹{item.itemTotal.toLocaleString('en-IN')}
                     </span>
                   </div>
@@ -347,7 +347,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <Button
               variant="primary"
               size="lg"
-              className="w-full shadow-md shadow-brand-600/20"
+              className="w-full shadow-md shadow-brand-600/20 cursor-pointer"
               onClick={handleInitiateRazorpay}
               isLoading={isProcessing}
               disabled={!defaultAddress || cart.items.length === 0}

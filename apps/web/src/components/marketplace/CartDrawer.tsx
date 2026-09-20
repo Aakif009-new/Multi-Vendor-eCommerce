@@ -77,7 +77,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         </div>
 
         {/* Item List Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-5 space-y-3.5 sm:space-y-4 custom-scrollbar">
           {!cart || cart.items.length === 0 ? (
             <EmptyState
               icon={<ShoppingBag className="h-8 w-8 text-surface-400" />}
@@ -109,8 +109,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   {/* Details */}
                   <div className="flex-1 flex flex-col justify-between min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h4 className="text-xs font-bold text-surface-900 truncate max-w-[180px]">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold text-surface-900 truncate">
                           {item.product.name}
                         </h4>
                         {item.product.vendor && (
@@ -121,7 +121,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       </div>
                       <button
                         onClick={() => onRemoveItem(item.id)}
-                        className="text-surface-400 hover:text-rose-600 transition-colors p-1"
+                        className="text-surface-400 hover:text-rose-600 transition-colors p-1 cursor-pointer shrink-0"
                         title="Remove"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -133,20 +133,20 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       <div className="flex items-center border border-surface-200 rounded-lg bg-white p-0.5">
                         <button
                           onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                          className="px-2 text-xs font-bold text-surface-600 hover:text-black"
+                          className="h-6 w-6 flex items-center justify-center text-xs font-bold text-surface-600 hover:text-black cursor-pointer rounded hover:bg-surface-100"
                         >
                           -
                         </button>
                         <span className="px-2 text-xs font-bold text-surface-900">{item.quantity}</span>
                         <button
                           onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                          className="px-2 text-xs font-bold text-surface-600 hover:text-black"
+                          className="h-6 w-6 flex items-center justify-center text-xs font-bold text-surface-600 hover:text-black cursor-pointer rounded hover:bg-surface-100"
                         >
                           +
                         </button>
                       </div>
 
-                      <span className="text-xs font-extrabold text-surface-900">
+                      <span className="text-xs font-extrabold text-surface-950">
                         ₹{item.itemTotal.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -159,7 +159,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         {/* Bottom Checkout Action */}
         {cart && cart.items.length > 0 && (
-          <div className="p-5 border-t border-surface-200 bg-white space-y-3">
+          <div className="p-4 sm:p-5 border-t border-surface-200 bg-white space-y-3">
             <div className="space-y-1.5 text-xs text-surface-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
@@ -182,7 +182,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <Button
               variant="primary"
               size="lg"
-              className="w-full"
+              className="w-full cursor-pointer"
               onClick={onProceedToCheckout}
               rightIcon={<ArrowRight className="h-4 w-4" />}
             >

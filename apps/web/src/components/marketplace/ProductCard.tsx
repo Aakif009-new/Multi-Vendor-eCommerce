@@ -118,16 +118,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       </div>
 
       {/* 2. Card Details Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3">
         <div className="space-y-1.5">
           {/* Category & Merchant Row */}
-          <div className="flex items-center justify-between text-[11px] text-surface-500">
-            <span className="font-semibold uppercase tracking-wider text-surface-500 truncate max-w-[100px]">
+          <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-surface-500 gap-1">
+            <span className="font-semibold uppercase tracking-wider text-surface-500 truncate max-w-[90px] sm:max-w-[110px]">
               {product.category?.name || 'Category'}
             </span>
             {product.vendor && (
               <span
-                className="flex items-center gap-1 text-surface-500 truncate max-w-[130px]"
+                className="flex items-center gap-1 text-surface-500 truncate max-w-[110px] sm:max-w-[130px]"
                 title={`Store: ${product.vendor.businessName}`}
               >
                 <Store className="h-3 w-3 text-surface-400 shrink-0" />
@@ -139,7 +139,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Product Title */}
           <h4
             title={product.name}
-            className="h-10 text-xs sm:text-sm font-semibold text-surface-900 line-clamp-2 group-hover:text-brand-600 transition-colors leading-snug"
+            className="h-9 sm:h-10 text-xs sm:text-sm font-semibold text-surface-900 line-clamp-2 group-hover:text-brand-600 transition-colors leading-snug"
           >
             {product.name}
           </h4>
@@ -151,18 +151,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               <span className="ml-1 font-bold text-surface-900 text-xs">{ratingValue}</span>
             </div>
             {reviewCount !== null && (
-              <span className="text-[11px] text-surface-400 font-medium">({reviewCount})</span>
+              <span className="text-[10px] sm:text-[11px] text-surface-400 font-medium">({reviewCount})</span>
             )}
           </div>
 
           {/* Price & Savings Display */}
           <div className="pt-0.5">
-            <div className="flex items-baseline gap-2">
-              <span className="text-base sm:text-lg font-bold text-surface-950">
+            <div className="flex items-baseline gap-1.5 sm:gap-2 flex-wrap">
+              <span className="text-sm sm:text-base md:text-lg font-bold text-surface-950">
                 ₹{currentPrice.toLocaleString('en-IN')}
               </span>
               {hasDiscount && (
-                <span className="text-xs text-surface-400 line-through">
+                <span className="text-[11px] sm:text-xs text-surface-400 line-through">
                   ₹{product.price.toLocaleString('en-IN')}
                 </span>
               )}
@@ -180,7 +180,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <Button
             variant={isAddedRecently ? 'secondary' : isOutOfStock ? 'outline' : 'primary'}
             size="sm"
-            className="w-full h-8 text-xs font-semibold rounded-lg transition-all"
+            className="w-full h-8 sm:h-9 text-xs font-semibold rounded-xl transition-all cursor-pointer"
             disabled={isOutOfStock}
             onClick={handleAddToCartClick}
             leftIcon={
@@ -191,7 +191,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               )
             }
           >
-            {isAddedRecently ? 'Added to Cart' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+            {isAddedRecently ? 'Added' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
           </Button>
         </div>
       </div>
@@ -202,7 +202,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 export const ProductCardSkeleton: React.FC = () => (
   <div className="flex flex-col justify-between bg-white rounded-2xl border border-surface-200/80 overflow-hidden h-full animate-pulse text-left shadow-xs">
     <div className="aspect-square w-full bg-surface-100" />
-    <div className="p-4 space-y-2.5">
+    <div className="p-3.5 sm:p-4 space-y-2.5">
       <div className="flex justify-between items-center">
         <div className="h-2.5 w-16 bg-surface-200 rounded" />
         <div className="h-2.5 w-20 bg-surface-200 rounded" />
@@ -212,7 +212,7 @@ export const ProductCardSkeleton: React.FC = () => (
       <div className="h-3 w-12 bg-surface-200 rounded" />
       <div className="h-5 w-24 bg-surface-200 rounded" />
       <div className="pt-2 border-t border-surface-100">
-        <div className="h-8 w-full bg-surface-200 rounded-lg" />
+        <div className="h-8 sm:h-9 w-full bg-surface-200 rounded-xl" />
       </div>
     </div>
   </div>

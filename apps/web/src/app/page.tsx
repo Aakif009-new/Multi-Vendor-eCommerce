@@ -652,39 +652,39 @@ export default function RootMarketplacePage() {
         onLogout={handleLogoutClick}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10 sm:space-y-16">
         {/* ========================================================= */}
         {/* CUSTOMER MARKETPLACE (Role: CUSTOMER)                     */}
         {/* ========================================================= */}
         {user.role === 'CUSTOMER' && (
-          <div className="space-y-16 animate-fade-in">
+          <div className="space-y-10 sm:space-y-16 animate-fade-in">
             {/* 1. EDITORIAL HERO SECTION */}
-            <section className="relative overflow-hidden rounded-3xl bg-surface-900 text-white p-8 md:p-14 border border-surface-800 shadow-xl text-left">
+            <section className="relative overflow-hidden rounded-3xl bg-surface-900 text-white p-6 sm:p-8 md:p-14 border border-surface-800 shadow-xl text-left">
               {/* Subtle background glow */}
               <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-600/15 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
                 {/* Left Hero Copy */}
-                <div className="lg:col-span-7 space-y-5">
+                <div className="lg:col-span-7 space-y-4 sm:space-y-5">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[11px] font-semibold tracking-wide backdrop-blur-xs">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                     Curated products &bull; Trusted merchants
                   </div>
 
-                  <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.12] text-white">
+                  <h1 className="font-display text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.15] sm:leading-[1.12] text-white">
                     Discover products worth bringing home.
                   </h1>
 
-                  <p className="text-sm md:text-base text-surface-300 leading-relaxed max-w-xl font-normal">
+                  <p className="text-xs sm:text-sm md:text-base text-surface-300 leading-relaxed max-w-xl font-normal">
                     Shop curated products from trusted merchants across technology, fashion, home, beauty and everyday essentials.
                   </p>
 
-                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <div className="pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3">
                     <Button
                       variant="primary"
                       size="md"
-                      className="bg-white text-surface-950 hover:bg-surface-100 hover:text-black font-bold shadow-none"
+                      className="bg-white text-surface-950 hover:bg-surface-100 hover:text-black font-bold shadow-none text-xs sm:text-sm"
                       onClick={() => {
                         const el = document.getElementById('catalog-section');
                         el?.scrollIntoView({ behavior: 'smooth' });
@@ -696,7 +696,7 @@ export default function RootMarketplacePage() {
                     <Button
                       variant="ghost"
                       size="md"
-                      className="text-surface-300 hover:text-white hover:bg-white/10 border border-white/15"
+                      className="text-surface-300 hover:text-white hover:bg-white/10 border border-white/15 text-xs sm:text-sm"
                       onClick={() => {
                         const el = document.getElementById('stores-section');
                         el?.scrollIntoView({ behavior: 'smooth' });
@@ -749,8 +749,8 @@ export default function RootMarketplacePage() {
             </section>
 
             {/* 2. VALUE PROPOSITION TRUST ROW */}
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-2 border-y border-surface-200/60 text-left">
-              <div className="flex items-start gap-3.5 p-3">
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 py-2 border-y border-surface-200/60 text-left">
+              <div className="flex items-start gap-3.5 p-2 sm:p-3">
                 <div className="p-2.5 rounded-xl bg-surface-100 text-surface-700 shrink-0">
                   <Store className="h-5 w-5" />
                 </div>
@@ -762,7 +762,7 @@ export default function RootMarketplacePage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3.5 p-3">
+              <div className="flex items-start gap-3.5 p-2 sm:p-3">
                 <div className="p-2.5 rounded-xl bg-surface-100 text-surface-700 shrink-0">
                   <ShieldCheck className="h-5 w-5 text-brand-600" />
                 </div>
@@ -774,7 +774,7 @@ export default function RootMarketplacePage() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3.5 p-3">
+              <div className="flex items-start gap-3.5 p-2 sm:p-3">
                 <div className="p-2.5 rounded-xl bg-surface-100 text-surface-700 shrink-0">
                   <UserCheck className="h-5 w-5 text-emerald-600" />
                 </div>
@@ -1002,9 +1002,9 @@ export default function RootMarketplacePage() {
               )}
 
               {/* Main Catalog Layout (Left Sidebar + Right Product Grid) */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
                 {/* Desktop Left Filter Sidebar */}
-                <div className="hidden md:block md:col-span-3 sticky top-24">
+                <div className="hidden md:block md:col-span-3 sticky top-20 lg:top-24 max-h-[calc(100vh-5.5rem)] lg:max-h-[calc(100vh-6.5rem)] overflow-y-auto overflow-x-hidden pr-1.5 custom-scrollbar overscroll-contain focus:outline-none">
                   <ProductFilters
                     categories={categories}
                     brands={brands}
@@ -1031,7 +1031,7 @@ export default function RootMarketplacePage() {
                 {/* Right Product Grid */}
                 <div className="md:col-span-9">
                   {isLoadingProducts ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {Array.from({ length: 6 }).map((_, idx) => (
                         <ProductCardSkeleton key={idx} />
                       ))}
@@ -1045,7 +1045,7 @@ export default function RootMarketplacePage() {
                       onAction={handleResetFilters}
                     />
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {filteredProducts.map((product) => (
                         <ProductCard
                           key={product.id}
@@ -1065,48 +1065,76 @@ export default function RootMarketplacePage() {
         )}
       </main>
 
-      {/* Mobile Filter Drawer / Modal */}
+      {/* Mobile Filter Drawer / Bottom Sheet */}
       {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/60 backdrop-blur-xs md:hidden animate-fade-in text-left">
-          <div className="relative w-full max-w-sm bg-white rounded-2xl p-4 max-h-[85vh] overflow-y-auto space-y-4 shadow-2xl animate-slide-up">
-            <div className="flex items-center justify-between pb-2 border-b border-surface-100">
-              <span className="font-bold text-sm text-surface-900">Filter Products</span>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-surface-950/60 backdrop-blur-xs md:hidden animate-fade-in text-left">
+          <div className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl max-h-[88vh] sm:max-h-[85vh] flex flex-col shadow-2xl animate-slide-up overflow-hidden">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-surface-100 shrink-0 bg-white">
+              <div className="flex items-center gap-2">
+                <FilterIcon className="h-4 w-4 text-brand-600" />
+                <span className="font-display font-bold text-sm text-surface-900">Filter Products</span>
+                {activeFiltersCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-[10px] font-bold">
+                    {activeFiltersCount} active
+                  </span>
+                )}
+              </div>
               <button
                 onClick={() => setIsMobileFilterOpen(false)}
-                className="p-1 rounded-lg hover:bg-surface-100 text-surface-500"
+                className="p-1.5 rounded-xl hover:bg-surface-100 text-surface-500 transition-colors cursor-pointer"
+                aria-label="Close filters"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <ProductFilters
-              categories={categories}
-              brands={brands}
-              vendors={vendors}
-              search={search}
-              selectedCategory={selectedCategory}
-              selectedVendor={selectedVendor}
-              selectedBrand={selectedBrand}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              sort={sort}
-              totalResults={filteredProducts.length}
-              onSearchChange={setSearch}
-              onCategoryChange={setSelectedCategory}
-              onVendorChange={setSelectedVendor}
-              onBrandChange={setSelectedBrand}
-              onMinPriceChange={setMinPrice}
-              onMaxPriceChange={setMaxPrice}
-              onSortChange={setSort}
-              onReset={handleResetFilters}
-            />
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full"
-              onClick={() => setIsMobileFilterOpen(false)}
-            >
-              Show {filteredProducts.length} Results
-            </Button>
+
+            {/* Scrollable Filter Body */}
+            <div className="flex-1 overflow-y-auto overscroll-contain p-4 custom-scrollbar">
+              <ProductFilters
+                categories={categories}
+                brands={brands}
+                vendors={vendors}
+                search={search}
+                selectedCategory={selectedCategory}
+                selectedVendor={selectedVendor}
+                selectedBrand={selectedBrand}
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                sort={sort}
+                totalResults={filteredProducts.length}
+                onSearchChange={setSearch}
+                onCategoryChange={setSelectedCategory}
+                onVendorChange={setSelectedVendor}
+                onBrandChange={setSelectedBrand}
+                onMinPriceChange={setMinPrice}
+                onMaxPriceChange={setMaxPrice}
+                onSortChange={setSort}
+                onReset={handleResetFilters}
+              />
+            </div>
+
+            {/* Sticky Drawer Footer */}
+            <div className="p-4 border-t border-surface-100 bg-surface-50/80 flex items-center gap-2 shrink-0">
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="shrink-0 text-xs"
+                  onClick={handleResetFilters}
+                >
+                  Clear All
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                size="md"
+                className="flex-1 font-bold text-xs shadow-md shadow-brand-600/20"
+                onClick={() => setIsMobileFilterOpen(false)}
+              >
+                Show {filteredProducts.length} Result{filteredProducts.length === 1 ? '' : 's'}
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -115,7 +115,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
         </div>
 
         {/* Modal Scrollable Content */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 custom-scrollbar overscroll-contain">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Media Gallery */}
             <div className="space-y-3">
@@ -141,12 +141,12 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
               </div>
 
               {product.images && product.images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1">
+                <div className="flex gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
                   {product.images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setSelectedImageIndex(idx)}
-                      className={`h-14 w-14 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                      className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                         selectedImageIndex === idx ? 'border-brand-600 scale-105 shadow-xs' : 'border-surface-200'
                       }`}
                     >
@@ -191,7 +191,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                   )}
                 </div>
 
-                <h2 className="text-xl md:text-2xl font-black text-surface-950 leading-tight">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-surface-950 leading-tight">
                   {product.name}
                 </h2>
 
@@ -211,12 +211,12 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
                 {/* Pricing & Savings */}
                 <div className="pt-2 border-t border-surface-100">
-                  <div className="flex items-baseline gap-3">
+                  <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
                     <span className="text-2xl md:text-3xl font-black text-surface-950">
                       ₹{currentPrice.toLocaleString('en-IN')}
                     </span>
                     {hasDiscount && (
-                      <span className="text-sm md:text-base text-surface-400 line-through">
+                      <span className="text-xs sm:text-sm md:text-base text-surface-400 line-through">
                         ₹{product.price.toLocaleString('en-IN')}
                       </span>
                     )}
@@ -226,7 +226,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                       Save ₹{savingsAmount.toLocaleString('en-IN')} ({discountPercent}% off MRP)
                     </div>
                   )}
-                  <span className="text-[11px] text-surface-400 block mt-0.5">Price inclusive of all applicable taxes.</span>
+                  <span className="text-[10px] sm:text-[11px] text-surface-400 block mt-0.5">Price inclusive of all applicable taxes.</span>
                 </div>
 
                 {/* Stock Status Indicator */}
@@ -251,7 +251,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                   <h4 className="text-[11px] font-bold uppercase tracking-wider text-surface-500 mb-1">
                     Product Description
                   </h4>
-                  <p className="text-xs text-surface-600 leading-relaxed max-h-24 overflow-y-auto">
+                  <p className="text-xs text-surface-600 leading-relaxed max-h-24 overflow-y-auto custom-scrollbar">
                     {product.description}
                   </p>
                 </div>
@@ -287,10 +287,10 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                 {!isOutOfStock && (
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-semibold text-surface-700">Quantity:</span>
-                    <div className="flex items-center border border-surface-200 rounded-xl bg-surface-50 p-1">
+                    <div className="flex items-center border border-surface-200 rounded-xl bg-surface-50 p-0.5">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-2.5 py-0.5 text-sm font-bold text-surface-700 hover:text-black cursor-pointer"
+                        className="h-8 w-8 flex items-center justify-center text-sm font-bold text-surface-700 hover:text-black cursor-pointer rounded-lg hover:bg-surface-200/60"
                         aria-label="Decrease quantity"
                       >
                         -
@@ -298,7 +298,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                       <span className="px-3 text-xs font-bold text-surface-900">{quantity}</span>
                       <button
                         onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                        className="px-2.5 py-0.5 text-sm font-bold text-surface-700 hover:text-black cursor-pointer"
+                        className="h-8 w-8 flex items-center justify-center text-sm font-bold text-surface-700 hover:text-black cursor-pointer rounded-lg hover:bg-surface-200/60"
                         aria-label="Increase quantity"
                       >
                         +
@@ -337,7 +337,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
           </div>
 
           {/* Platform Trust & Security Guarantees (Strictly Supported Functionality) */}
-          <div className="p-4 rounded-2xl bg-surface-50 border border-surface-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
+          <div className="p-3 sm:p-4 rounded-2xl bg-surface-50 border border-surface-200 grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-left">
             <div className="flex items-center gap-2">
               <Lock className="h-4 w-4 text-emerald-600 shrink-0" />
               <div>

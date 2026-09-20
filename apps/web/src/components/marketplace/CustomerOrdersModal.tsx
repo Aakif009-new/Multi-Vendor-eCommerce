@@ -23,26 +23,26 @@ export const CustomerOrdersModal: React.FC<CustomerOrdersModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-950/60 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up text-left max-h-[85vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-surface-950/60 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-surface-200 overflow-hidden animate-slide-up text-left max-h-[92vh] sm:max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b border-surface-200 flex items-center justify-between">
+        <div className="p-4 sm:p-6 border-b border-surface-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
               <Package className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-display text-lg font-extrabold text-surface-950">Your Order History</h3>
+              <h3 className="font-display text-base sm:text-lg font-extrabold text-surface-950">Your Order History</h3>
               <p className="text-xs text-surface-500">Track shipments and submit verified reviews</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-100 text-surface-500">
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-100 text-surface-500" aria-label="Close">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Orders List */}
-        <div className="p-6 flex-1 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto space-y-4 custom-scrollbar overscroll-contain">
           {orders.length === 0 ? (
             <EmptyState
               icon={<Package className="h-10 w-10 text-surface-400" />}

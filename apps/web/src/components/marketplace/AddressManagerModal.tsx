@@ -84,7 +84,7 @@ export const AddressManagerModal: React.FC<AddressManagerModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 flex-1 overflow-y-auto space-y-4">
+        <div className="p-4 sm:p-5 flex-1 overflow-y-auto overscroll-contain space-y-4 custom-scrollbar">
           {!showAddForm ? (
             <div className="space-y-3">
               <div className="flex justify-between items-center pb-2">
@@ -94,6 +94,7 @@ export const AddressManagerModal: React.FC<AddressManagerModalProps> = ({
                   size="sm"
                   onClick={() => setShowAddForm(true)}
                   leftIcon={<Plus className="h-3.5 w-3.5" />}
+                  className="cursor-pointer"
                 >
                   Add New Address
                 </Button>
@@ -129,14 +130,14 @@ export const AddressManagerModal: React.FC<AddressManagerModalProps> = ({
                         {!addr.isDefault && (
                           <button
                             onClick={() => onSetDefaultAddress(addr.id)}
-                            className="text-[11px] font-semibold text-brand-600 hover:text-brand-700"
+                            className="text-[11px] font-semibold text-brand-600 hover:text-brand-700 cursor-pointer"
                           >
                             Set Default
                           </button>
                         )}
                         <button
                           onClick={() => onDeleteAddress(addr.id)}
-                          className="text-surface-400 hover:text-rose-600 p-1"
+                          className="text-surface-400 hover:text-rose-600 p-1 cursor-pointer"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -159,13 +160,13 @@ export const AddressManagerModal: React.FC<AddressManagerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="text-xs text-surface-500 hover:text-surface-900"
+                  className="text-xs text-surface-500 hover:text-surface-900 cursor-pointer"
                 >
                   Cancel
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
                   label="Label (e.g. Home / Office)"
                   value={title}
@@ -190,7 +191,7 @@ export const AddressManagerModal: React.FC<AddressManagerModalProps> = ({
                 required
               />
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <Input
                   label="City"
                   placeholder="Bengaluru"
@@ -228,7 +229,7 @@ export const AddressManagerModal: React.FC<AddressManagerModalProps> = ({
                 type="submit"
                 variant="primary"
                 size="md"
-                className="w-full mt-2"
+                className="w-full mt-2 cursor-pointer"
                 isLoading={isLoading}
               >
                 Save Shipping Address

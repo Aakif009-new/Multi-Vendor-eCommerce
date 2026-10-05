@@ -27,39 +27,91 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SESSION_STORAGE_KEY = 'bazaarone_has_session';
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const refreshUser = async (): Promise<AuthUser | null> => {
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    // Fast synchronous check on client: if there's definitely no session recorded, don't block
+    if (typeof window === 'undefined') return true;
     try {
-      const res = await fetch('/api/auth/me');
+      const hasLocal = localStorage.getItem(SESSION_STORAGE_KEY) === 'true';
+      const hasCookie = document.cookie.includes('bazaarone_session=1') || document.cookie.includes('token=');
+      return hasLocal || hasCookie;
+    } catch {
+      return false;
+    }
+  });
+
+  const refreshUser = React.useCallback(async (force = false): Promise<AuthUser | null> => {
+    // Fast path: Check if any indicator of session exists
+    let hasSession = false;
+    if (typeof window !== 'undefined') {
+      try {
+        hasSession =
+          localStorage.getItem(SESSION_STORAGE_KEY) === 'true' ||
+          document.cookie.includes('bazaarone_session=1') ||
+          document.cookie.includes('token=');
+      } catch {}
+    }
+
+    if (!force && !hasSession) {
+      setUser(null);
+      setIsLoading(false);
+      return null;
+    }
+
+    setIsLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout to prevent hanging on cold starts
+
+    try {
+      const res = await fetch('/api/auth/me', {
+        signal: controller.signal,
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      clearTimeout(timeoutId);
+
       const data = await res.json();
       if (res.ok && data.success && data.data?.user) {
         setUser(data.data.user);
+        try {
+          localStorage.setItem(SESSION_STORAGE_KEY, 'true');
+        } catch {}
         return data.data.user;
       } else {
         setUser(null);
+        try {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+        } catch {}
         return null;
       }
     } catch {
+      clearTimeout(timeoutId);
       setUser(null);
       return null;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshUser();
-  }, []);
+  }, [refreshUser]);
 
   const login = async (email: string, password: string): Promise<AuthUser> => {
     setIsLoading(true);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -69,6 +121,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setUser(data.data.user);
+      try {
+        localStorage.setItem(SESSION_STORAGE_KEY, 'true');
+      } catch {}
       return data.data.user;
     } finally {
       setIsLoading(false);
@@ -80,7 +135,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
@@ -90,6 +149,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       setUser(data.data.user);
+      try {
+        localStorage.setItem(SESSION_STORAGE_KEY, 'true');
+      } catch {}
       return data.data.user;
     } finally {
       setIsLoading(false);
@@ -98,9 +160,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async (): Promise<void> => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
     } catch {}
     setUser(null);
+    try {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+    } catch {}
   };
 
   return (

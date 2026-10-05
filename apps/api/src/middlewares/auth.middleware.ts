@@ -28,17 +28,29 @@ export async function authenticate(
     // 3. Verify JWT signature & expiration
     const payload = verifyToken(token);
 
-    // 4. Verify user still exists and is not suspended
+    // 4. Verify user still exists and is not suspended with complete vendor relation in single query
     const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        status: true,
-      },
-    });
+       where: { id: payload.userId },
+       select: {
+         id: true,
+         name: true,
+         email: true,
+         role: true,
+         status: true,
+         createdAt: true,
+         vendor: {
+           select: {
+             id: true,
+             userId: true,
+             businessName: true,
+             slug: true,
+             status: true,
+             accountStatus: true,
+             rating: true,
+           },
+         },
+       },
+     });
 
     if (!user) {
       throw AppError.unauthorized('The user belonging to this token no longer exists.');
@@ -52,8 +64,11 @@ export async function authenticate(
       throw AppError.unauthorized('Your account is currently inactive.');
     }
 
-    // Attach user to request object
+    // Attach user and vendor to request object
     req.user = user;
+    if (user.vendor) {
+      req.vendor = user.vendor;
+    }
     next();
   } catch (error) {
     next(error);

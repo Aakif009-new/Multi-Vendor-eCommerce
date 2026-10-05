@@ -6,14 +6,18 @@ import { Server } from 'http';
 let server: Server | null = null;
 
 async function bootstrap() {
-  await connectDB();
-
   const PORT = env.PORT;
   const HOST = process.env.HOST || '0.0.0.0';
 
+  // Bind HTTP server immediately so health checks and incoming requests are received without blocking on DB handshake
   server = app.listen(PORT, HOST, () => {
     console.log(`🚀 [BazaarOne API]: Server is running at http://${HOST}:${PORT}`);
     console.log(`🔗 [BazaarOne API]: Health check at http://${HOST}:${PORT}/api/health`);
+  });
+
+  // Initiate database connection concurrently
+  connectDB().catch((err) => {
+    console.error('Initial DB connection error:', err);
   });
 
   const handleShutdown = async (signal: string) => {

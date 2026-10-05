@@ -252,9 +252,8 @@ export default function RootMarketplacePage() {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && user.role === 'CUSTOMER') {
       fetchLiveVendors();
-      fetchLiveProducts();
       fetchLiveCategories();
       fetchLiveCart();
       fetchLiveWishlist();

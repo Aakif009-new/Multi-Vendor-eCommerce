@@ -16,6 +16,7 @@ export class AuthController {
     try {
       const { user, token } = await AuthService.register(req.body);
       res.cookie('token', token, COOKIE_OPTIONS);
+      res.cookie('bazaarone_session', '1', { ...COOKIE_OPTIONS, httpOnly: false });
       sendSuccess(res, { user, token }, 'Registration successful', 201);
     } catch (error) {
       next(error);
@@ -26,6 +27,7 @@ export class AuthController {
     try {
       const { user, token } = await AuthService.login(req.body);
       res.cookie('token', token, COOKIE_OPTIONS);
+      res.cookie('bazaarone_session', '1', { ...COOKIE_OPTIONS, httpOnly: false });
       sendSuccess(res, { user, token }, 'Login successful', 200);
     } catch (error) {
       next(error);
@@ -34,8 +36,9 @@ export class AuthController {
 
   static async getMe(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const user = await AuthService.getCurrentUser(req.user!.id);
-      sendSuccess(res, { user }, 'Profile retrieved successfully', 200);
+      // req.user is already loaded by authenticate middleware with full user and vendor profile.
+      // Reusing it eliminates a duplicate MongoDB Atlas network query.
+      sendSuccess(res, { user: req.user }, 'Profile retrieved successfully', 200);
     } catch (error) {
       next(error);
     }
@@ -54,6 +57,11 @@ export class AuthController {
     try {
       res.clearCookie('token', {
         httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.clearCookie('bazaarone_session', {
+        httpOnly: false,
         secure: env.NODE_ENV === 'production',
         sameSite: 'lax',
       });

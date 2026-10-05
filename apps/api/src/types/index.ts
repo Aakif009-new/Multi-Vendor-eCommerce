@@ -13,6 +13,16 @@ export interface AuthenticatedUser {
   email: string;
   role: Role;
   status: AccountStatus;
+  createdAt?: Date | string;
+  vendor?: {
+    id: string;
+    userId?: string;
+    businessName: string;
+    slug: string;
+    status: VendorStatus;
+    accountStatus: AccountStatus;
+    rating?: number;
+  } | null;
 }
 
 export interface AuthenticatedVendor {

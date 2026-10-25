@@ -141,32 +141,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         const razorpayInstance = new (window as any).Razorpay(options);
         razorpayInstance.open();
       } else {
-        // Direct test simulation fallback
-        const mockPaymentId = `pay_mock_${Date.now()}`;
-        const mockSignature = 'mock_verified_signature';
-
-        const verifyRes = await fetch('/api/orders/verify-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderId: order.id,
-            razorpayOrderId,
-            razorpayPaymentId: mockPaymentId,
-            razorpaySignature: mockSignature,
-          }),
-        });
-
-        const verifyData = await verifyRes.json();
-        if (verifyData.success) {
-          setConfirmedOrder(verifyData.data);
-          onOrderConfirmed(verifyData.data);
-        } else {
-          setConfirmedOrder({
-            ...order,
-            status: 'CONFIRMED',
-            paymentStatus: 'PAID',
-          });
-        }
+        setErrorMessage('Unable to load Razorpay payment gateway. Please verify your connection or disable ad-blockers, then try again.');
         setIsProcessing(false);
       }
     } catch (err: any) {

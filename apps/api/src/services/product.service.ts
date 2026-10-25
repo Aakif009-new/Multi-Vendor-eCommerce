@@ -258,7 +258,7 @@ export class ProductService {
     return { message: 'Product deleted successfully.' };
   }
 
-  static async toggleProductStatus(vendorId: string, productId: string, status: ProductStatus) {
+  static async toggleProductStatus(vendorId: string, productId: string, status: ProductStatus, isAdmin = false) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -267,7 +267,7 @@ export class ProductService {
       throw AppError.notFound('Product not found.');
     }
 
-    if (product.vendorId !== vendorId) {
+    if (!isAdmin && product.vendorId !== vendorId) {
       throw AppError.forbidden('Forbidden: You can only change the status of your own products.');
     }
 

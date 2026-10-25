@@ -51,10 +51,13 @@ export class ProductController {
 
   static async toggleStatus(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
+      const isAdmin = req.user?.role === 'ADMIN';
+      const vendorId = req.vendor?.id || '';
       const updated = await ProductService.toggleProductStatus(
-        req.vendor!.id,
+        vendorId,
         req.params.id,
-        req.body.status
+        req.body.status,
+        isAdmin
       );
       sendSuccess(res, updated, 'Product status updated successfully', 200);
     } catch (error) {

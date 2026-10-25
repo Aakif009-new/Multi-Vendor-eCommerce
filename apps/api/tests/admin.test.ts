@@ -97,27 +97,56 @@ describe('Admin Governance & Role-Based Access Control', () => {
     expect(updatedUser?.role).toBe('VENDOR');
   });
 
+  let createdCategoryId: string | null = null;
+  let createdBrandId: string | null = null;
+
+  afterAll(async () => {
+    // Teardown: Clean up test created category and brand to prevent database pollution
+    if (createdCategoryId) {
+      await prisma.category.delete({ where: { id: createdCategoryId } }).catch(() => {});
+    }
+    if (createdBrandId) {
+      await prisma.brand.delete({ where: { id: createdBrandId } }).catch(() => {});
+    }
+  });
+
+  it('should reject category creation with internal test placeholder name (422)', async () => {
+    const res = await request(app)
+      .post('/api/categories')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        name: 'Admin Category 1792938522548',
+        description: 'Placeholder test name',
+      });
+
+    expect(res.status).toBe(422);
+    expect(res.body.success).toBe(false);
+  });
+
   it('should allow Super Admin to create a new Category and Brand', async () => {
+    const suffix = Date.now().toString().slice(-4);
     const catRes = await request(app)
       .post('/api/categories')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        name: `Admin Category ${Date.now()}`,
+        name: `Specialty Crafts ${suffix}`,
         description: 'Managed by Super Admin.',
       });
 
     expect(catRes.status).toBe(201);
     expect(catRes.body.success).toBe(true);
+    createdCategoryId = catRes.body.data.id;
 
     const brandRes = await request(app)
       .post('/api/brands')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({
-        name: `Admin Brand ${Date.now()}`,
+        name: `Specialty Studio ${suffix}`,
         description: 'Official Brand.',
       });
 
     expect(brandRes.status).toBe(201);
     expect(brandRes.body.success).toBe(true);
+    createdBrandId = brandRes.body.data.id;
   });
 });

@@ -22,7 +22,7 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<AuthUser>;
   register: (data: any) => Promise<AuthUser>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<AuthUser | null>;
+  refreshUser: (force?: boolean) => Promise<AuthUser | null>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

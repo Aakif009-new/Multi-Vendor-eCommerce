@@ -10,6 +10,9 @@ export interface RegisterInput {
   email: string;
   password: string;
   role?: Role;
+  businessName?: string;
+  businessAddress?: string;
+  phone?: string;
 }
 
 export interface LoginInput {
@@ -20,6 +23,7 @@ export interface LoginInput {
 export class AuthService {
   static async register(input: RegisterInput) {
     const normalizedEmail = input.email.toLowerCase().trim();
+    const trimmedName = input.name.trim();
 
     // Prevent public self-registration as ADMIN
     if (input.role === 'ADMIN') {
@@ -39,7 +43,7 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: {
-        name: input.name.trim(),
+        name: trimmedName,
         email: normalizedEmail,
         passwordHash,
         role: assignedRole,
@@ -57,14 +61,18 @@ export class AuthService {
 
     // If registering as VENDOR, initiate pending Vendor profile & application
     if (assignedRole === 'VENDOR') {
-      const vendorSlug = generateSlug(input.name);
+      const bName = (input.businessName && input.businessName.trim()) || `${trimmedName}'s Store`;
+      const bAddress = (input.businessAddress && input.businessAddress.trim()) || 'Address Pending Update';
+      const bPhone = (input.phone && input.phone.trim()) || 'Phone Pending';
+      const vendorSlug = generateSlug(bName);
+
       await prisma.vendor.create({
         data: {
           userId: user.id,
-          businessName: `${input.name}'s Store`,
+          businessName: bName,
           slug: vendorSlug,
-          businessAddress: 'Address Pending Update',
-          phone: 'Phone Pending',
+          businessAddress: bAddress,
+          phone: bPhone,
           status: 'PENDING',
           accountStatus: 'ACTIVE',
         },
@@ -73,9 +81,9 @@ export class AuthService {
       await prisma.vendorApplication.create({
         data: {
           userId: user.id,
-          businessName: `${input.name}'s Store`,
-          businessAddress: 'Pending Details Submission',
-          phone: 'Pending',
+          businessName: bName,
+          businessAddress: bAddress,
+          phone: bPhone,
           status: 'PENDING',
         },
       });

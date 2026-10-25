@@ -1,14 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
-    const rawBackendUrl =
+    let backendUrl =
       process.env.BACKEND_INTERNAL_URL ||
       process.env.API_URL ||
       process.env.NEXT_PUBLIC_BACKEND_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      'http://localhost:5000';
+      '';
 
-    const cleanBackendUrl = rawBackendUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+    // Guard against self-proxy loops: if unset, relative, or pointing to Next.js port 3000, route to Express on port 5000
+    if (!backendUrl || backendUrl.includes(':3000') || backendUrl.startsWith('/')) {
+      backendUrl = 'http://localhost:5000';
+    }
+
+    const cleanBackendUrl = backendUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
     return [
       {

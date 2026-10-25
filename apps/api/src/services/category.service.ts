@@ -7,8 +7,7 @@ export class CategoryService {
     return prisma.category.findMany({
       where: {
         ...(includeInactive ? {} : { isActive: true }),
-        name: { not: { contains: '178' } },
-        slug: { not: { contains: '178' } },
+        name: { not: { startsWith: 'Admin Category' } },
       },
       orderBy: { name: 'asc' },
       include: {
@@ -18,10 +17,15 @@ export class CategoryService {
   }
 
   static async createCategory(data: { name: string; description?: string; imageUrl?: string; parentId?: string | null }) {
-    const slug = generateSlug(data.name);
+    const trimmedName = data.name.trim();
+    if (/^(admin[ _-]?category|test[ _-]?category|temp[ _-]?category)/i.test(trimmedName) || /\b\d{10,14}\b/.test(trimmedName)) {
+      throw AppError.badRequest('Category name cannot be an internal test or placeholder name.');
+    }
+
+    const slug = generateSlug(trimmedName);
 
     const existing = await prisma.category.findFirst({
-      where: { OR: [{ name: data.name.trim() }, { slug }] },
+      where: { OR: [{ name: trimmedName }, { slug }] },
     });
 
     if (existing) {
@@ -75,7 +79,10 @@ export class CategoryService {
 export class BrandService {
   static async getBrands(includeInactive = false) {
     return prisma.brand.findMany({
-      where: includeInactive ? {} : { isActive: true },
+      where: {
+        ...(includeInactive ? {} : { isActive: true }),
+        name: { not: { startsWith: 'Admin Brand' } },
+      },
       orderBy: { name: 'asc' },
       include: {
         _count: { select: { products: true } },
@@ -84,10 +91,15 @@ export class BrandService {
   }
 
   static async createBrand(data: { name: string; description?: string; logoUrl?: string }) {
-    const slug = generateSlug(data.name);
+    const trimmedName = data.name.trim();
+    if (/^(admin[ _-]?brand|test[ _-]?brand|temp[ _-]?brand)/i.test(trimmedName) || /\b\d{10,14}\b/.test(trimmedName)) {
+      throw AppError.badRequest('Brand name cannot be an internal test or placeholder name.');
+    }
+
+    const slug = generateSlug(trimmedName);
 
     const existing = await prisma.brand.findFirst({
-      where: { OR: [{ name: data.name.trim() }, { slug }] },
+      where: { OR: [{ name: trimmedName }, { slug }] },
     });
 
     if (existing) {
@@ -96,7 +108,7 @@ export class BrandService {
 
     return prisma.brand.create({
       data: {
-        name: data.name.trim(),
+        name: trimmedName,
         slug,
         description: data.description,
         logoUrl: data.logoUrl,

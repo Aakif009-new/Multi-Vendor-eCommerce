@@ -9,10 +9,12 @@ async function bootstrap() {
   const PORT = env.PORT;
   const HOST = process.env.HOST || '0.0.0.0';
 
+  const displayHost = HOST === '0.0.0.0' ? 'localhost' : HOST;
+
   // Bind HTTP server immediately so health checks and incoming requests are received without blocking on DB handshake
   server = app.listen(PORT, HOST, () => {
-    console.log(`🚀 [BazaarOne API]: Server is running at http://${HOST}:${PORT}`);
-    console.log(`🔗 [BazaarOne API]: Health check at http://${HOST}:${PORT}/api/health`);
+    console.log(`🚀 [BazaarOne API]: Server is running at http://${displayHost}:${PORT}`);
+    console.log(`🔗 [BazaarOne API]: Health check at http://${displayHost}:${PORT}/api/health`);
   });
 
   // Initiate database connection concurrently

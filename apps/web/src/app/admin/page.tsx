@@ -35,39 +35,138 @@ export default function AdminPageRoute() {
     }
   }, [user, isLoading, router]);
 
+  const fetchStats = async () => {
+    try {
+      const r = await fetch('/api/admin/stats');
+      const d = await r.json();
+      if (d.success && d.data) setStats(d.data);
+    } catch {}
+  };
+
+  const fetchApplications = async () => {
+    try {
+      const r = await fetch('/api/admin/vendor-applications');
+      const d = await r.json();
+      if (d.success && Array.isArray(d.data)) setApplications(d.data);
+    } catch {}
+  };
+
+  const fetchVendors = async () => {
+    try {
+      const r = await fetch('/api/vendors');
+      const d = await r.json();
+      if (d.success && Array.isArray(d.data)) setVendors(d.data);
+    } catch {}
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const r = await fetch('/api/products?limit=100');
+      const d = await r.json();
+      if (d.success && Array.isArray(d.data)) setProducts(d.data);
+    } catch {}
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const r = await fetch('/api/categories');
+      const d = await r.json();
+      if (d.success && Array.isArray(d.data)) setCategories(d.data);
+    } catch {}
+  };
+
+  const fetchBrands = async () => {
+    try {
+      const r = await fetch('/api/brands');
+      const d = await r.json();
+      if (d.success && Array.isArray(d.data)) setBrands(d.data);
+    } catch {}
+  };
+
   useEffect(() => {
     if (user && user.role === 'ADMIN') {
-      fetch('/api/vendors')
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success && d.data) {
-            setVendors(d.data);
-            setStats((prev) => ({ ...prev, totalVendors: d.data.length }));
-          }
-        })
-        .catch(() => {});
-
-      fetch('/api/products?limit=100')
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success && d.data) {
-            setProducts(d.data);
-            setStats((prev) => ({ ...prev, totalProducts: d.data.length, activeProducts: d.data.length }));
-          }
-        })
-        .catch(() => {});
-
-      fetch('/api/categories')
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success && d.data) {
-            setCategories(d.data);
-            setStats((prev) => ({ ...prev, totalCategories: d.data.length }));
-          }
-        })
-        .catch(() => {});
+      fetchStats();
+      fetchApplications();
+      fetchVendors();
+      fetchProducts();
+      fetchCategories();
+      fetchBrands();
     }
   }, [user]);
+
+  const handleReviewApplication = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+    const res = await fetch(`/api/admin/vendor-applications/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to review application');
+    }
+    await Promise.all([fetchApplications(), fetchVendors(), fetchStats()]);
+  };
+
+  const handleModerateProduct = async (id: string, status: 'ACTIVE' | 'SUSPENDED') => {
+    const res = await fetch(`/api/admin/products/${id}/moderate`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to moderate product');
+    }
+    await Promise.all([fetchProducts(), fetchStats()]);
+  };
+
+  const handleCreateCategory = async (data: { name: string; description?: string }) => {
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to create category');
+    }
+    await Promise.all([fetchCategories(), fetchStats()]);
+  };
+
+  const handleCreateBrand = async (data: { name: string; description?: string }) => {
+    const res = await fetch('/api/brands', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to create brand');
+    }
+    await Promise.all([fetchBrands(), fetchStats()]);
+  };
+
+  const handleDeactivateCategory = async (id: string) => {
+    const res = await fetch(`/api/categories/${id}`, {
+      method: 'DELETE',
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to deactivate category');
+    }
+    await Promise.all([fetchCategories(), fetchStats()]);
+  };
+
+  const handleSeed100Products = async () => {
+    const res = await fetch('/api/seed/100-products', {
+      method: 'POST',
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to reseed products');
+    }
+    await Promise.all([fetchProducts(), fetchCategories(), fetchStats()]);
+  };
 
   if (isLoading || !user) {
     return (
@@ -116,11 +215,12 @@ export default function AdminPageRoute() {
           categories={categories}
           brands={brands}
           vendors={vendors}
-          onReviewApplication={async () => {}}
-          onModerateProduct={async () => {}}
-          onCreateCategory={async () => {}}
-          onCreateBrand={async () => {}}
-          onDeactivateCategory={async () => {}}
+          onReviewApplication={handleReviewApplication}
+          onModerateProduct={handleModerateProduct}
+          onCreateCategory={handleCreateCategory}
+          onCreateBrand={handleCreateBrand}
+          onDeactivateCategory={handleDeactivateCategory}
+          onSeed100Products={handleSeed100Products}
         />
       </main>
       <Footer />

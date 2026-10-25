@@ -45,6 +45,18 @@ export function errorHandler(
     return;
   }
 
+  // Prisma Record Not Found (P2025)
+  if (err.code === 'P2025') {
+    sendError(res, 'Requested database record not found or already deleted', 404);
+    return;
+  }
+
+  // Prisma Foreign Key / Invalid Relation (P2003, P2014)
+  if (err.code === 'P2003' || err.code === 'P2014') {
+    sendError(res, 'Referenced related record does not exist or relation is invalid', 400);
+    return;
+  }
+
   // SyntaxError from body-parser
   if (err instanceof SyntaxError && 'body' in err) {
     sendError(res, 'Malformed JSON payload in request body', 400);

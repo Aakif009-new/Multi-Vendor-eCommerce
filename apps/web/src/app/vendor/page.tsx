@@ -25,23 +25,30 @@ export default function VendorPageRoute() {
     }
   }, [user, isLoading, router]);
 
+  const fetchVendorProducts = async () => {
+    try {
+      const res = await fetch('/api/vendors/me/products');
+      const d = await res.json();
+      if (d.success && Array.isArray(d.data)) {
+        setProducts(d.data);
+      }
+    } catch {}
+  };
+
+  const fetchVendorOrders = async () => {
+    try {
+      const res = await fetch('/api/orders/vendor');
+      const d = await res.json();
+      if (d.success && Array.isArray(d.data)) {
+        setVendorOrders(d.data);
+      }
+    } catch {}
+  };
+
   useEffect(() => {
     if (user && user.role === 'VENDOR') {
-      fetch('/api/vendors/me/products')
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.success && Array.isArray(d.data) && d.data.length > 0) {
-            setProducts(d.data);
-          } else {
-            fetch('/api/products?limit=50')
-              .then((r2) => r2.json())
-              .then((d2) => {
-                if (d2.success && d2.data) setProducts(d2.data);
-              })
-              .catch(() => {});
-          }
-        })
-        .catch(() => {});
+      fetchVendorProducts();
+      fetchVendorOrders();
 
       fetch('/api/categories')
         .then((r) => r.json())
@@ -49,8 +56,78 @@ export default function VendorPageRoute() {
           if (d.success && d.data) setCategories(d.data);
         })
         .catch(() => {});
+
+      fetch('/api/brands')
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.success && d.data) setBrands(d.data);
+        })
+        .catch(() => {});
     }
   }, [user]);
+
+  const handleCreateProduct = async (data: any) => {
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to create product');
+    }
+    await fetchVendorProducts();
+  };
+
+  const handleUpdateProduct = async (id: string, data: any) => {
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to update product');
+    }
+    await fetchVendorProducts();
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'DELETE',
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to delete product');
+    }
+    await fetchVendorProducts();
+  };
+
+  const handleToggleStatus = async (id: string, status: string) => {
+    const res = await fetch(`/api/products/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to update product status');
+    }
+    await fetchVendorProducts();
+  };
+
+  const handleUpdateOrderStatus = async (orderItemId: string, status: string) => {
+    const res = await fetch(`/api/orders/vendor/items/${orderItemId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to update order status');
+    }
+    await fetchVendorOrders();
+  };
 
   if (isLoading || !user) {
     return (
@@ -104,10 +181,11 @@ export default function VendorPageRoute() {
             totalInventoryValue: products.reduce((acc, p) => acc + p.price * p.stock, 0),
           }}
           vendorName={user.name || 'Merchant Storefront'}
-          onCreateProduct={async () => {}}
-          onUpdateProduct={async () => {}}
-          onDeleteProduct={async () => {}}
-          onToggleStatus={async () => {}}
+          onCreateProduct={handleCreateProduct}
+          onUpdateProduct={handleUpdateProduct}
+          onDeleteProduct={handleDeleteProduct}
+          onToggleStatus={handleToggleStatus}
+          onUpdateOrderStatus={handleUpdateOrderStatus}
         />
       </main>
       <Footer />

@@ -65,7 +65,7 @@ import {
 
 export default function RootMarketplacePage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading, logout } = useAuth();
+  const { user, isLoading: isAuthLoading, logout, refreshUser } = useAuth();
 
   // Root authentication gate & role redirect
   useEffect(() => {
@@ -145,7 +145,10 @@ export default function RootMarketplacePage() {
       });
       const data = await res.json();
       if (data.success && data.data?.user) {
+        await refreshUser(true);
         showToast('Profile updated successfully!');
+      } else {
+        showToast(data.message || 'Failed to update profile.');
       }
     } catch {
       showToast('Failed to update profile.');
@@ -574,18 +577,24 @@ export default function RootMarketplacePage() {
       case 'electronics':
         return <Headphones className="h-5 w-5 text-brand-600" />;
       case 'computers':
+      case 'computers-accessories':
         return <Monitor className="h-5 w-5 text-indigo-600" />;
       case 'fashion':
+      case 'mens-fashion':
+      case 'womens-fashion':
         return <Shirt className="h-5 w-5 text-rose-500" />;
       case 'home-kitchen':
         return <HomeIcon className="h-5 w-5 text-amber-600" />;
       case 'beauty':
+      case 'beauty-personal-care':
         return <Sparkles className="h-5 w-5 text-pink-500" />;
       case 'grocery':
+      case 'grocery-food':
         return <Apple className="h-5 w-5 text-emerald-600" />;
       case 'sports-fitness':
         return <Dumbbell className="h-5 w-5 text-cyan-600" />;
       case 'books':
+      case 'books-stationery':
         return <BookOpen className="h-5 w-5 text-orange-600" />;
       case 'toys-games':
         return <Gamepad2 className="h-5 w-5 text-purple-600" />;
@@ -1246,25 +1255,26 @@ export default function RootMarketplacePage() {
         isOpen={isVendorApplyOpen}
         onClose={() => setIsVendorApplyOpen(false)}
         onSubmitApplication={async (data) => {
-          setApplications([
-            ...applications,
-            {
-              id: `app-${Date.now()}`,
-              userId: user?.id || 'u-new',
-              user: { name: user?.name || 'Applicant', email: user?.email || 'app@test.com' },
-              businessName: data.businessName,
-              businessAddress: data.businessAddress,
-              phone: data.phone,
-              description: data.description,
-              status: 'PENDING',
-              createdAt: new Date().toISOString(),
-            },
-          ]);
-          setAdminStats({
-            ...adminStats,
-            pendingApplications: adminStats.pendingApplications + 1,
-          });
-          showToast('Vendor application submitted for review!');
+          try {
+            const res = await fetch('/api/vendors/apply', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+            const json = await res.json();
+            if (json.success && json.data) {
+              setApplications((prev) => [...prev, json.data]);
+              setAdminStats((prev) => ({
+                ...prev,
+                pendingApplications: prev.pendingApplications + 1,
+              }));
+              showToast('Vendor application submitted for review!');
+            } else {
+              showToast(json.message || 'Failed to submit vendor application');
+            }
+          } catch (err: any) {
+            showToast(err.message || 'Failed to submit vendor application');
+          }
         }}
       />
 

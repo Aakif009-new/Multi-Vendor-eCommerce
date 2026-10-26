@@ -17,6 +17,8 @@ import {
   Star,
   MapPin,
   Phone,
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 import { AdminStats, VendorApplication, Product, Category, Brand, VendorSummary } from '@/types/marketplace';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
@@ -69,6 +71,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     await onCreateCategory({ name: newCatName, description: newCatDesc });
     setNewCatName('');
     setNewCatDesc('');
+  };
+
+  const handleViewPanDocument = async (appId: string) => {
+    try {
+      const res = await fetch(`/api/admin/vendor-applications/${appId}/pan-document`, {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Could not retrieve PAN document access URL');
+      }
+      if (data.data?.accessUrl) {
+        window.open(data.data.accessUrl, '_blank', 'noopener,noreferrer');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to open document');
+    }
   };
 
   const handleAddBrand = async (e: React.FormEvent) => {
@@ -262,6 +281,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <tr>
                     <th className="py-3 px-4">Business Name</th>
                     <th className="py-3 px-4">Applicant</th>
+                    <th className="py-3 px-4">Tax & Compliance</th>
                     <th className="py-3 px-4">Contact & Address</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
@@ -277,6 +297,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <td className="py-3 px-4">
                         <span className="font-medium text-surface-800 block">{app.user?.name || 'Applicant'}</span>
                         <span className="text-[10px] text-surface-400">{app.user?.email}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="space-y-1">
+                          {app.gstin ? (
+                            <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold text-surface-900">
+                              <span className="text-[10px] text-surface-400">GST:</span>
+                              <span className="bg-amber-100/70 text-amber-900 px-1.5 py-0.5 rounded border border-amber-200">
+                                {app.gstin}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-surface-500 italic block">
+                              Sole Prop. / No GSTIN
+                            </span>
+                          )}
+
+                          {app.panDocumentKey || app.panDocumentUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => handleViewPanDocument(app.id)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 hover:bg-brand-100 text-[10px] font-bold border border-brand-200 transition-colors"
+                              title="View uploaded Business PAN Card"
+                            >
+                              <FileText className="h-3 w-3" />
+                              <span>View PAN Card</span>
+                              <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-surface-400 block">No PAN document</span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-surface-600">
                         <span>{app.phone}</span>

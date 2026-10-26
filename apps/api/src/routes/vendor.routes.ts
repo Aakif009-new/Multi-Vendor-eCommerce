@@ -28,5 +28,9 @@ router.put(
 );
 router.get('/me/products', authenticate, requireRole('VENDOR'), requireVendor, VendorController.getMyProducts);
 router.get('/me/stats', authenticate, requireRole('VENDOR'), requireVendor, VendorController.getMyStats);
+router.get('/me/documents/pan', authenticate, requireRole('VENDOR'), VendorController.getMyPanDocument);
+
+// Secure Signed Document Stream (Local Private Vault Fallback)
+router.get('/documents/stream', VendorController.streamPrivateDocument);
 
 export default router;

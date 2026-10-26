@@ -3,6 +3,9 @@ import { AuthService } from '../services/auth.service';
 import { sendSuccess } from '../utils/apiResponse';
 import { AuthRequest } from '../types';
 import { env } from '../config/env';
+import { validateFileMagicBytes } from '../utils/fileValidation';
+import { DocumentStorageService } from '../services/documentStorage.service';
+import { AppError } from '../utils/appError';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -14,6 +17,24 @@ const COOKIE_OPTIONS = {
 export class AuthController {
   static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      // If a document file is attached (e.g. Business PAN Card for vendor onboarding)
+      if (req.file) {
+        // Enforce binary magic bytes validation to prevent MIME spoofing
+        const magicCheck = validateFileMagicBytes(req.file.buffer, req.file.mimetype);
+        if (!magicCheck.isValid) {
+          throw AppError.badRequest(magicCheck.error || 'Invalid document file content signature.');
+        }
+
+        const storedDoc = await DocumentStorageService.storePrivateDocument(
+          req.file.buffer,
+          req.file.mimetype,
+          req.file.originalname
+        );
+
+        req.body.panDocumentUrl = storedDoc.documentUrl;
+        req.body.panDocumentKey = storedDoc.documentKey;
+      }
+
       const { user, token } = await AuthService.register(req.body);
       res.cookie('token', token, COOKIE_OPTIONS);
       res.cookie('bazaarone_session', '1', { ...COOKIE_OPTIONS, httpOnly: false });

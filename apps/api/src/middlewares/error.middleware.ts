@@ -63,6 +63,16 @@ export function errorHandler(
     return;
   }
 
+  // Multer File Upload Errors (e.g. 5MB file size limit)
+  if (err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      sendError(res, 'File size exceeds the 5 MB maximum limit', 400);
+      return;
+    }
+    sendError(res, err.message || 'File upload error', 400);
+    return;
+  }
+
   // Unhandled / Internal Server Errors
   console.error('💥 [Unhandled Error]:', err);
 

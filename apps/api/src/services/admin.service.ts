@@ -138,6 +138,11 @@ export class AdminService {
         update: {
           status: 'APPROVED',
           accountStatus: 'ACTIVE',
+          ...(app.gstin && { gstin: app.gstin }),
+          ...(app.panNumber && { panNumber: app.panNumber }),
+          ...(app.panDocumentUrl && { panDocumentUrl: app.panDocumentUrl }),
+          ...(app.panDocumentKey && { panDocumentKey: app.panDocumentKey }),
+          ...(app.legalStructure && { legalStructure: app.legalStructure }),
         },
         create: {
           userId: app.userId,
@@ -145,6 +150,11 @@ export class AdminService {
           slug: uniqueSlug,
           businessAddress: app.businessAddress,
           phone: app.phone,
+          gstin: app.gstin,
+          panNumber: app.panNumber,
+          panDocumentUrl: app.panDocumentUrl,
+          panDocumentKey: app.panDocumentKey,
+          legalStructure: app.legalStructure,
           status: 'APPROVED',
           accountStatus: 'ACTIVE',
         },

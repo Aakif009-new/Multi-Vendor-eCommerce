@@ -12,9 +12,11 @@ out/
 .env.test.local
 .env.production.local
 
-# Temp media staging
+# Temp media staging & private vaults
 temp-images/
 apps/api/temp-images/
+storage/
+apps/api/storage/
 
 # System and logs
 *.log

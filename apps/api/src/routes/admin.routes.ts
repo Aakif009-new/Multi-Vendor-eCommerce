@@ -18,6 +18,7 @@ router.get('/stats', AdminController.getStats);
 router.get('/users', AdminController.getUsers);
 router.patch('/users/:id/status', validate(updateUserStatusSchema), AdminController.updateUserStatus);
 router.get('/vendor-applications', AdminController.getVendorApplications);
+router.get('/vendor-applications/:id/pan-document', AdminController.getApplicationPanDocument);
 router.patch(
   '/vendor-applications/:id',
   validate(reviewVendorApplicationSchema),

@@ -13,16 +13,19 @@ describe('Admin Governance & Role-Based Access Control', () => {
   beforeAll(async () => {
     const pwdHash = await hashPassword('Admin@123');
 
-    // 1. Setup Admin
-    const admin = await prisma.user.create({
-      data: {
-        name: 'Super Admin',
-        email: `admin_${Date.now()}@market.com`,
-        passwordHash: pwdHash,
-        role: 'ADMIN',
-        status: 'ACTIVE',
-      },
-    });
+    // 1. Setup Admin (Use canonical Super Administrator to preserve Super Admin uniqueness)
+    let admin = await prisma.user.findUnique({ where: { email: 'admin@bazaarone.com' } });
+    if (!admin) {
+      admin = await prisma.user.create({
+        data: {
+          name: 'Super Administrator',
+          email: 'admin@bazaarone.com',
+          passwordHash: pwdHash,
+          role: 'ADMIN',
+          status: 'ACTIVE',
+        },
+      });
+    }
     adminToken = signToken({ userId: admin.id, email: admin.email, role: 'ADMIN' });
 
     // 2. Setup Customer (Unauthorized for admin routes)

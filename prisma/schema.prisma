@@ -90,6 +90,11 @@ model Vendor {
   status          VendorStatus       @default(PENDING)
   accountStatus   AccountStatus      @default(ACTIVE)
   rating          Float              @default(0.0)
+  gstin           String?
+  panNumber       String?
+  panDocumentUrl  String?
+  panDocumentKey  String?
+  legalStructure  String?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   
@@ -113,6 +118,11 @@ model VendorApplication {
   status          VendorStatus @default(PENDING)
   reviewedBy      String?      @db.ObjectId
   rejectionReason String?
+  gstin           String?
+  panNumber       String?
+  panDocumentUrl  String?
+  panDocumentKey  String?
+  legalStructure  String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 

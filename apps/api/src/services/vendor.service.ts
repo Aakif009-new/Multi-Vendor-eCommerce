@@ -57,7 +57,10 @@ export class VendorService {
       throw AppError.notFound('Vendor storefront not found.');
     }
 
-    return vendor;
+    // Never expose private documents or internal compliance keys in public storefront APIs
+    const { panDocumentUrl, panDocumentKey, panNumber, ...safeVendor } = vendor as any;
+
+    return safeVendor;
   }
 
   static async applyForVendor(

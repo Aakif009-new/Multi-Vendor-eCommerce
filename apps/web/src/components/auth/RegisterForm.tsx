@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   User,
   Mail,
@@ -15,17 +15,30 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
+  FileUp,
+  X,
+  Building2,
+  ShieldCheck,
+  RefreshCw,
+  FileCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
-import { evaluatePasswordStrength } from '@/lib/passwordStrength';
+import { validateGstinClient } from '@/lib/gstinValidator';
 import { cn } from '@/lib/utils';
 
 export interface RegisterFormProps {
   onSuccess?: (user: { id: string; name: string; email: string; role: string }) => void;
   onSwitchToLogin?: () => void;
 }
+
+export type LegalStructureType =
+  | 'SOLE_PROPRIETORSHIP'
+  | 'PARTNERSHIP'
+  | 'PRIVATE_LIMITED'
+  | 'OTHER';
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSuccess,
@@ -39,7 +52,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [businessName, setBusinessName] = useState('');
   const [businessAddress, setBusinessAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [legalStructure, setLegalStructure] = useState<LegalStructureType>('SOLE_PROPRIETORSHIP');
+  const [gstin, setGstin] = useState('');
+  const [panFile, setPanFile] = useState<File | null>(null);
   const [agreeTerms, setAgreeTerms] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -50,9 +68,19 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
+  // Real-time GSTIN validation calculation
+  const gstinResult = useMemo(() => {
+    if (!gstin.trim()) return null;
+    return validateGstinClient(gstin);
+  }, [gstin]);
+
   const markTouched = (field: string) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
+
+  const isGstinRequired =
+    role === 'VENDOR' &&
+    (legalStructure === 'PARTNERSHIP' || legalStructure === 'PRIVATE_LIMITED');
 
   const validateField = (field: string, val?: any): string => {
     switch (field) {
@@ -67,7 +95,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       case 'email': {
         const v = (val !== undefined ? val : email).trim();
         if (!v) return 'Email address is required.';
-        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+        const emailRegex =
+          /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
         if (!emailRegex.test(v)) return 'Please enter a valid email address.';
         if (v.length > 254) return 'Email cannot exceed 254 characters.';
         return '';
@@ -111,6 +140,38 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         if (v.length < 8) return 'Please enter a valid phone number.';
         return '';
       }
+      case 'gstin': {
+        if (role !== 'VENDOR') return '';
+        const v = (val !== undefined ? val : gstin).trim().toUpperCase();
+        if (!v) {
+          if (isGstinRequired) {
+            return 'GSTIN is mandatory for partnerships, LLPs, and corporate entities.';
+          }
+          return ''; // Optional for exempt sole proprietors
+        }
+        if (v.length !== 15) {
+          return `GSTIN must be exactly 15 characters (currently ${v.length}/15).`;
+        }
+        const res = validateGstinClient(v);
+        if (!res.isValid) {
+          return res.error || 'Invalid GSTIN structure or checksum.';
+        }
+        return '';
+      }
+      case 'panDocument': {
+        if (role !== 'VENDOR') return '';
+        if (!panFile) {
+          return 'Business PAN Card document upload is required for vendor onboarding.';
+        }
+        if (panFile.size > 5 * 1024 * 1024) {
+          return `File size (${(panFile.size / (1024 * 1024)).toFixed(1)} MB) exceeds 5 MB limit.`;
+        }
+        const allowedMimes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedMimes.includes(panFile.type.toLowerCase())) {
+          return 'Only PDF, JPEG, and PNG files are accepted.';
+        }
+        return '';
+      }
       default:
         return '';
     }
@@ -123,12 +184,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   };
 
   const handleChange = (field: string, value: any) => {
-    // Clear field-specific error as user types
     if (fieldErrors[field]) {
       const err = validateField(field, value);
       setFieldErrors((prev) => ({ ...prev, [field]: err }));
     }
-    // Cross-validate confirm password if password changes
     if (field === 'password' && touched.confirmPassword) {
       if (confirmPassword && value !== confirmPassword) {
         setFieldErrors((prev) => ({ ...prev, confirmPassword: 'Passwords do not match.' }));
@@ -138,6 +197,56 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }
   };
 
+  const handleGstinInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    // Normalize: uppercase, alphanumeric only, max 15 characters
+    const clean = raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15);
+    setGstin(clean);
+    handleChange('gstin', clean);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    markTouched('panDocument');
+
+    // 5 MB limit
+    if (file.size > 5 * 1024 * 1024) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        panDocument: `File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 5 MB limit.`,
+      }));
+      setPanFile(null);
+      return;
+    }
+
+    const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowed.includes(file.type.toLowerCase())) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        panDocument: 'Invalid format. Only PDF, JPG, JPEG, and PNG files are accepted.',
+      }));
+      setPanFile(null);
+      return;
+    }
+
+    setFieldErrors((prev) => ({ ...prev, panDocument: '' }));
+    setPanFile(file);
+  };
+
+  const handleRemoveFile = () => {
+    setPanFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    markTouched('panDocument');
+    setFieldErrors((prev) => ({
+      ...prev,
+      panDocument: 'Business PAN Card document upload is required.',
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setServerError(null);
@@ -145,7 +254,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     // Validate all fields
     const fieldsToValidate = ['name', 'email', 'password', 'confirmPassword', 'agreeTerms'];
     if (role === 'VENDOR') {
-      fieldsToValidate.push('businessName', 'businessAddress', 'phone');
+      fieldsToValidate.push('businessName', 'businessAddress', 'phone', 'panDocument');
+      if (isGstinRequired || gstin.trim().length > 0) {
+        fieldsToValidate.push('gstin');
+      }
     }
 
     const errors: Record<string, string> = {};
@@ -170,28 +282,63 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     setIsLoading(true);
 
     try {
-      const payload: Record<string, any> = {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        password,
-        role,
-      };
+      let res: Response;
 
-      if (role === 'VENDOR') {
-        payload.businessName = businessName.trim();
-        payload.businessAddress = businessAddress.trim();
-        payload.phone = phone.trim();
+      if (role === 'VENDOR' && panFile) {
+        // Send multipart form data with file attached
+        const formData = new FormData();
+        formData.append('name', name.trim());
+        formData.append('email', email.trim().toLowerCase());
+        formData.append('password', password);
+        formData.append('role', role);
+        formData.append('businessName', businessName.trim());
+        formData.append('businessAddress', businessAddress.trim());
+        formData.append('phone', phone.trim());
+        formData.append('legalStructure', legalStructure);
+
+        if (gstin.trim()) {
+          formData.append('gstin', gstin.trim().toUpperCase());
+        }
+
+        formData.append('panDocument', panFile);
+
+        res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+          body: formData,
+        });
+      } else {
+        // Standard JSON payload (Customer accounts or API fallback)
+        const payload: Record<string, any> = {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+          role,
+        };
+
+        if (role === 'VENDOR') {
+          payload.businessName = businessName.trim();
+          payload.businessAddress = businessAddress.trim();
+          payload.phone = phone.trim();
+          payload.legalStructure = legalStructure;
+          if (gstin.trim()) {
+            payload.gstin = gstin.trim().toUpperCase();
+          }
+        }
+
+        res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
       }
-
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
 
       const data = await res.json();
 
@@ -267,7 +414,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
       {/* Full Name */}
       <Input
-        label={role === 'VENDOR' ? 'Owner / Contact Name' : 'Full Name'}
+        label={role === 'VENDOR' ? 'Owner / Primary Contact Name' : 'Full Name'}
         placeholder="Sarah Jenkins"
         value={name}
         onChange={(e) => {
@@ -300,14 +447,59 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
       {/* Additional Vendor Information */}
       {role === 'VENDOR' && (
-        <div className="space-y-4 p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200/60 animate-slide-down">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
-            <Store className="h-4 w-4 text-amber-600" />
-            Merchant Storefront Profile
+        <div className="space-y-4 p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70 animate-slide-down">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-900">
+              <Store className="h-4 w-4 text-amber-600" />
+              Merchant Storefront & Tax Compliance Profile
+            </div>
+            <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200">
+              India Vendor Policy
+            </span>
+          </div>
+
+          {/* Legal Structure Selector */}
+          <div className="space-y-1.5 text-left">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-surface-600">
+              Business Legal Structure
+            </label>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {[
+                { id: 'SOLE_PROPRIETORSHIP', label: 'Sole Proprietorship / Individual' },
+                { id: 'PARTNERSHIP', label: 'Partnership / LLP' },
+                { id: 'PRIVATE_LIMITED', label: 'Private Limited / Company' },
+                { id: 'OTHER', label: 'Other Commercial Entity' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    setLegalStructure(item.id as LegalStructureType);
+                    // Re-trigger validation for gstin if touched
+                    if (touched.gstin) {
+                      setTimeout(() => handleBlur('gstin'), 0);
+                    }
+                  }}
+                  className={cn(
+                    'p-2.5 rounded-xl border text-left font-medium transition-all text-[11px] leading-tight',
+                    legalStructure === item.id
+                      ? 'border-amber-500 bg-amber-100/70 text-amber-950 font-bold shadow-sm'
+                      : 'border-surface-200 bg-white hover:border-surface-300 text-surface-700'
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-surface-500">
+              {legalStructure === 'SOLE_PROPRIETORSHIP'
+                ? 'ℹ️ Unregistered / exempt sole proprietors under turnover threshold may register without GSTIN.'
+                : 'ℹ️ GSTIN is mandatory for partnerships, LLPs, and incorporated private companies.'}
+            </p>
           </div>
 
           <Input
-            label="Business / Store Name"
+            label="Business / Storefront Trade Name"
             placeholder="Heritage Crafts & Decor"
             value={businessName}
             onChange={(e) => {
@@ -349,6 +541,170 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             autoComplete="tel"
             required
           />
+
+          {/* GSTIN Field */}
+          <div className="space-y-1.5 text-left">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="gstin-input"
+                className="block text-xs font-semibold uppercase tracking-wider text-surface-600"
+              >
+                GST Identification Number (GSTIN)
+                {isGstinRequired ? (
+                  <span className="text-rose-600 ml-1 font-bold">*</span>
+                ) : (
+                  <span className="text-surface-400 font-normal lowercase ml-1">(optional for exempt sole proprietors)</span>
+                )}
+              </label>
+              <span className="text-[10px] text-surface-400 font-mono">
+                {gstin.length}/15
+              </span>
+            </div>
+
+            <div className="relative flex items-center">
+              <div className="absolute left-3.5 flex items-center pointer-events-none text-surface-400">
+                <Building2 className="h-4 w-4 text-amber-600" />
+              </div>
+              <input
+                id="gstin-input"
+                type="text"
+                maxLength={15}
+                placeholder="29ABCDE1234F1Z5"
+                value={gstin}
+                onChange={handleGstinInputChange}
+                onBlur={() => handleBlur('gstin')}
+                className={cn(
+                  'w-full uppercase font-mono rounded-xl border bg-white px-4 py-2.5 text-sm transition-all shadow-sm focus:outline-none focus:ring-2 pl-10 pr-10',
+                  touched.gstin && fieldErrors.gstin
+                    ? 'border-rose-300 bg-rose-50/30 text-rose-900 focus:border-rose-500 focus:ring-rose-500/20'
+                    : gstinResult?.isValid
+                    ? 'border-emerald-400 bg-emerald-50/20 text-emerald-950 focus:border-emerald-500 focus:ring-emerald-500/20'
+                    : 'border-surface-200 hover:border-surface-300 focus:border-brand-500 focus:ring-brand-500/20 text-surface-900'
+                )}
+              />
+              {gstinResult?.isValid && (
+                <div className="absolute right-3.5 flex items-center text-emerald-600">
+                  <CheckCircle2 className="h-4 w-4" />
+                </div>
+              )}
+            </div>
+
+            {/* Inline GSTIN Error */}
+            {touched.gstin && fieldErrors.gstin && (
+              <p role="alert" className="text-xs font-medium text-rose-600 animate-slide-down">
+                {fieldErrors.gstin}
+              </p>
+            )}
+
+            {/* Inline GSTIN Success Badge */}
+            {gstinResult?.isValid && (
+              <div className="flex items-center gap-1.5 p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs animate-slide-down">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span>
+                  <strong>Format & Checksum Valid:</strong> Registered in {gstinResult.stateName} ({gstinResult.entityType}).
+                </span>
+              </div>
+            )}
+
+            {/* Format Disclaimer */}
+            <p className="text-[11px] text-surface-500 leading-normal">
+              Example placeholder: <code className="bg-amber-100/60 px-1 py-0.5 rounded font-mono text-[10px]">29ABCDE1234F1Z5</code>{' '}
+              (illustrative format example, not a verified GSTIN). This system validates structure and Mod-36 checksum locally; it does not claim government verification.
+            </p>
+          </div>
+
+          {/* Business PAN Card Document Upload */}
+          <div className="space-y-2 text-left pt-1">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-surface-600">
+                Business PAN Card Document <span className="text-rose-600 font-bold">*</span>
+              </label>
+              <span className="text-[10px] text-surface-400">PDF, JPG, JPEG, PNG (Max 5 MB)</span>
+            </div>
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+              className="hidden"
+              id="pan-document-upload"
+            />
+
+            {!panFile ? (
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  'border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all hover:bg-white/80 group',
+                  touched.panDocument && fieldErrors.panDocument
+                    ? 'border-rose-300 bg-rose-50/30'
+                    : 'border-surface-300 hover:border-amber-500 bg-white/50'
+                )}
+              >
+                <FileUp className="h-8 w-8 mx-auto text-amber-500 group-hover:scale-110 transition-transform mb-2" />
+                <p className="text-xs font-bold text-surface-800">
+                  Click to select Business PAN Card file
+                </p>
+                <p className="text-[11px] text-surface-500 mt-0.5">
+                  Drag and drop or browse from your computer (Up to 5 MB)
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-amber-300 shadow-sm animate-fade-in">
+                <div className="flex items-center gap-2.5 overflow-hidden">
+                  <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                    <FileCheck className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-surface-900 truncate">
+                      {panFile.name}
+                    </p>
+                    <p className="text-[10px] text-surface-500">
+                      {(panFile.size / 1024).toFixed(0)} KB •{' '}
+                      <span className="text-emerald-700 font-semibold uppercase">
+                        {panFile.name.split('.').pop()} Ready for Secure Storage
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-1.5 rounded-lg text-xs font-semibold text-surface-600 hover:text-amber-700 hover:bg-amber-50 flex items-center gap-1"
+                    title="Replace file"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Replace</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="p-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-1"
+                    title="Remove file"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Remove</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {touched.panDocument && fieldErrors.panDocument && (
+              <p role="alert" className="text-xs font-medium text-rose-600 animate-slide-down">
+                {fieldErrors.panDocument}
+              </p>
+            )}
+
+            {/* Authenticity Disclaimer Box */}
+            <div className="p-2.5 rounded-xl bg-amber-100/60 border border-amber-200/80 text-[11px] text-amber-900 leading-normal flex items-start gap-2">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-amber-700 mt-0.5" />
+              <span>
+                <strong>Document Security Notice:</strong> Documents are stored in an encrypted private vault and accessible only to you and authorized marketplace administrators. Document authenticity has not been verified against government databases and will be audited during merchant review.
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

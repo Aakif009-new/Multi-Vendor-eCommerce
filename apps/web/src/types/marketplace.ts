@@ -153,6 +153,11 @@ export interface VendorApplication {
   businessAddress: string;
   phone: string;
   description?: string;
+  gstin?: string;
+  panNumber?: string;
+  panDocumentUrl?: string;
+  panDocumentKey?: string;
+  legalStructure?: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   createdAt: string;
 }

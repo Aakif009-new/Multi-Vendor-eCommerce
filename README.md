@@ -59,7 +59,7 @@ The system is architected as a clean monorepo comprising a Next.js 14 App Router
 
 ---
 
-## 2. Why BazaarOne
+## 2. Why bazaarOne
 
 Traditional e-commerce platforms often impose high commission overheads and complex onboarding procedures that alienate independent and neighborhood merchants. Conversely, standalone store builders require individual sellers to manage their own hosting, traffic generation, and payment compliance.
 

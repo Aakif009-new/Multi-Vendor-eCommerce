@@ -23,11 +23,11 @@ jobs:
       COOKIE_SECRET: ${{ secrets.COOKIE_SECRET || 'ci_test_cookie_secret_key_2026' }}
       CORS_ORIGIN: http://localhost:3000
       RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID || 'rzp_test_TWo5jJDGLNDsBZ' }}
-      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET || 'test_razorpay_key_secret_for_ci' }}
-      RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET || 'bazaarone_razorpay_webhook_secret_2026' }}
-      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME || 'MULTI-VENDOR' }}
-      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY || 'test_cloudinary_key' }}
-      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET || 'test_cloudinary_secret' }}
+      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET || 'I44Zdj1v2N6DYjh4vVBL4NtC' }}
+      RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET || 'whsec_6fb1ba85353f44325ded8f464764a9464f431ee0db84c6a628b66319' }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME || 's25ni42x' }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY || '923119275161814' }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET || '8dkmYoaMxt_bgshJADeq547Fd9E' }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY || 'test_pexels_api_key' }}
 
     steps:

@@ -49,6 +49,8 @@ export const VendorApplicationModal: React.FC<VendorApplicationModalProps> = ({
         {/* Header */}
         <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-4 sm:p-6 text-white relative shrink-0">
           <button
+
+
             onClick={onClose}
             className="absolute top-4 sm:top-5 right-4 sm:right-5 p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-white transition-colors"
             aria-label="Close"

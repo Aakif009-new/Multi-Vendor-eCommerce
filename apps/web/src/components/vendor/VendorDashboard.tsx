@@ -455,6 +455,7 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-100">
+
                   {filteredProducts.map((prod) => (
                     <tr key={prod.id} className="hover:bg-surface-50/50 transition-colors">
                       <td className="py-3 px-4 flex items-center gap-3">
@@ -481,13 +482,12 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md font-bold text-[10px] ${
-                            prod.stock <= 0
-                              ? 'bg-rose-100 text-rose-700'
-                              : prod.stock <= 5
+                          className={`inline-flex items-center px-2 py-0.5 rounded-md font-bold text-[10px] ${prod.stock <= 0
+                            ? 'bg-rose-100 text-rose-700'
+                            : prod.stock <= 5
                               ? 'bg-amber-100 text-amber-700'
                               : 'bg-emerald-100 text-emerald-700'
-                          }`}
+                            }`}
                         >
                           {prod.stock} units
                         </span>
@@ -802,11 +802,10 @@ export const VendorDashboard: React.FC<VendorDashboardProps> = ({
         title="Confirm Status Change"
         description={
           statusTarget
-            ? `Are you sure you want to change the status of "${statusTarget.product.name}" to ${statusTarget.nextStatus}? ${
-                statusTarget.nextStatus === 'ACTIVE'
-                  ? 'The product will become visible to shoppers on the marketplace storefront.'
-                  : 'The product will be hidden from public browsing as a draft.'
-              }`
+            ? `Are you sure you want to change the status of "${statusTarget.product.name}" to ${statusTarget.nextStatus}? ${statusTarget.nextStatus === 'ACTIVE'
+              ? 'The product will become visible to shoppers on the marketplace storefront.'
+              : 'The product will be hidden from public browsing as a draft.'
+            }`
             : ''
         }
         confirmText={`Set to ${statusTarget?.nextStatus || 'Confirm'}`}

@@ -608,7 +608,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 id="gstin-input"
                 type="text"
                 maxLength={15}
-                placeholder="29ABCDE1234F1Z5"
+                placeholder="29AAACG0569P1Z3"
                 value={gstin}
                 onChange={handleGstinInputChange}
                 onBlur={() => handleBlur('gstin')}
@@ -647,7 +647,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
             {/* Format Disclaimer */}
             <p className="text-[11px] text-surface-500 leading-normal">
-              Example placeholder: <code className="bg-amber-100/60 px-1 py-0.5 rounded font-mono text-[10px]">29ABCDE1234F1Z5</code>{' '}
+              Example placeholder: <code className="bg-amber-100/60 px-1 py-0.5 rounded font-mono text-[10px]">29AAACG0569P1Z3</code>{' '}
               (illustrative format example, not a verified GSTIN). This system validates structure and Mod-36 checksum locally; it does not claim government verification.
             </p>
           </div>

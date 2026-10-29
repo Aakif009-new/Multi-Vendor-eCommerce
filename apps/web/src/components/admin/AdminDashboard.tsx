@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Shield,
   Users,
@@ -19,6 +19,9 @@ import {
   Phone,
   FileText,
   ExternalLink,
+  Search,
+  Filter,
+  X,
 } from 'lucide-react';
 import { AdminStats, VendorApplication, Product, Category, Brand, VendorSummary } from '@/types/marketplace';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
@@ -26,6 +29,8 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Tabs } from '../ui/Tabs';
 import { Input } from '../ui/Input';
+import { ConfirmationModal } from '../ui/ConfirmationModal';
+import { Toast } from '../ui/Toast';
 
 export interface AdminDashboardProps {
   stats: AdminStats;
@@ -59,18 +64,122 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [activeTab, setActiveTab] = useState('vendors');
   const [isSeeding, setIsSeeding] = useState(false);
 
+  // Search State for each module
+  const [vendorSearch, setVendorSearch] = useState('');
+  const [appSearch, setAppSearch] = useState('');
+  const [appStatusFilter, setAppStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [productSearch, setProductSearch] = useState('');
+  const [categorySearch, setCategorySearch] = useState('');
+  const [brandSearch, setBrandSearch] = useState('');
+
   // Category / Brand creation state
   const [newCatName, setNewCatName] = useState('');
   const [newCatDesc, setNewCatDesc] = useState('');
   const [newBrandName, setNewBrandName] = useState('');
   const [newBrandDesc, setNewBrandDesc] = useState('');
 
+  // Confirmation Modals State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    confirmText: string;
+    variant: 'danger' | 'warning' | 'primary' | 'success';
+    action: () => Promise<void>;
+  } | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  // Toast Notification State
+  const [toast, setToast] = useState<{ isOpen: boolean; message: string; type: 'success' | 'error' | 'info' | 'warning' }>({
+    isOpen: false,
+    message: '',
+    type: 'success',
+  });
+
+  // 1. Filtered Vendors
+  const filteredVendors = useMemo(() => {
+    if (!vendorSearch.trim()) return vendors;
+    const q = vendorSearch.toLowerCase().trim();
+    return vendors.filter((v) => {
+      const matchName = v.businessName?.toLowerCase().includes(q);
+      const matchDesc = v.description?.toLowerCase().includes(q);
+      const matchPhone = v.phone?.toLowerCase().includes(q);
+      const matchAddress = v.businessAddress?.toLowerCase().includes(q);
+      return matchName || matchDesc || matchPhone || matchAddress;
+    });
+  }, [vendors, vendorSearch]);
+
+  // 2. Filtered Applications
+  const filteredApplications = useMemo(() => {
+    return applications.filter((app) => {
+      if (appStatusFilter !== 'ALL' && app.status !== appStatusFilter) return false;
+      if (appSearch.trim()) {
+        const q = appSearch.toLowerCase().trim();
+        const matchBusiness = app.businessName?.toLowerCase().includes(q);
+        const matchApplicant = app.user?.name?.toLowerCase().includes(q);
+        const matchEmail = app.user?.email?.toLowerCase().includes(q);
+        const matchGstin = app.gstin?.toLowerCase().includes(q);
+        const matchPhone = app.phone?.toLowerCase().includes(q);
+        const matchAddress = app.businessAddress?.toLowerCase().includes(q);
+        if (!matchBusiness && !matchApplicant && !matchEmail && !matchGstin && !matchPhone && !matchAddress) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [applications, appSearch, appStatusFilter]);
+
+  // 3. Filtered Products
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products;
+    const q = productSearch.toLowerCase().trim();
+    return products.filter((p) => {
+      const matchName = p.name.toLowerCase().includes(q);
+      const matchCat = p.category?.name?.toLowerCase().includes(q);
+      const matchVendor = p.vendor?.businessName?.toLowerCase().includes(q);
+      const matchSku = p.sku?.toLowerCase().includes(q);
+      return matchName || matchCat || matchVendor || matchSku;
+    });
+  }, [products, productSearch]);
+
+  // 4. Filtered Categories
+  const filteredCategories = useMemo(() => {
+    if (!categorySearch.trim()) return categories;
+    const q = categorySearch.toLowerCase().trim();
+    return categories.filter((c) => c.name.toLowerCase().includes(q) || c.slug.toLowerCase().includes(q));
+  }, [categories, categorySearch]);
+
+  // 5. Filtered Brands
+  const filteredBrands = useMemo(() => {
+    if (!brandSearch.trim()) return brands;
+    const q = brandSearch.toLowerCase().trim();
+    return brands.filter((b) => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q));
+  }, [brands, brandSearch]);
+
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCatName) return;
-    await onCreateCategory({ name: newCatName, description: newCatDesc });
-    setNewCatName('');
-    setNewCatDesc('');
+    if (!newCatName.trim()) return;
+    try {
+      await onCreateCategory({ name: newCatName.trim(), description: newCatDesc.trim() });
+      setToast({ isOpen: true, message: `Category "${newCatName}" created successfully!`, type: 'success' });
+      setNewCatName('');
+      setNewCatDesc('');
+    } catch (err: any) {
+      setToast({ isOpen: true, message: err.message || 'Failed to create category', type: 'error' });
+    }
+  };
+
+  const handleAddBrand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBrandName.trim()) return;
+    try {
+      await onCreateBrand({ name: newBrandName.trim(), description: newBrandDesc.trim() });
+      setToast({ isOpen: true, message: `Brand "${newBrandName}" registered successfully!`, type: 'success' });
+      setNewBrandName('');
+      setNewBrandDesc('');
+    } catch (err: any) {
+      setToast({ isOpen: true, message: err.message || 'Failed to register brand', type: 'error' });
+    }
   };
 
   const handleViewPanDocument = async (appId: string) => {
@@ -86,16 +195,88 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         window.open(data.data.accessUrl, '_blank', 'noopener,noreferrer');
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to open document');
+      setToast({ isOpen: true, message: err.message || 'Failed to open document', type: 'error' });
     }
   };
 
-  const handleAddBrand = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newBrandName) return;
-    await onCreateBrand({ name: newBrandName, description: newBrandDesc });
-    setNewBrandName('');
-    setNewBrandDesc('');
+  const requestReviewAppConfirmation = (app: VendorApplication, status: 'APPROVED' | 'REJECTED') => {
+    setConfirmModal({
+      isOpen: true,
+      title: status === 'APPROVED' ? `Approve "${app.businessName}"?` : `Reject "${app.businessName}"?`,
+      description:
+        status === 'APPROVED'
+          ? `Are you sure you want to approve this merchant application? This will promote "${app.user?.name || 'Applicant'}" (${app.user?.email}) to VENDOR status and grant full access to merchant catalog and payout tools.`
+          : `Are you sure you want to reject the merchant application for "${app.businessName}"? The storefront will not be activated.`,
+      confirmText: status === 'APPROVED' ? 'Yes, Approve Vendor' : 'Yes, Reject Application',
+      variant: status === 'APPROVED' ? 'success' : 'danger',
+      action: async () => {
+        setIsActionLoading(true);
+        try {
+          await onReviewApplication(app.id, status);
+          setToast({
+            isOpen: true,
+            message: `Vendor application for "${app.businessName}" has been ${status.toLowerCase()} successfully!`,
+            type: status === 'APPROVED' ? 'success' : 'info',
+          });
+          setConfirmModal(null);
+        } catch (err: any) {
+          setToast({ isOpen: true, message: err.message || 'Failed to process application review', type: 'error' });
+        } finally {
+          setIsActionLoading(false);
+        }
+      },
+    });
+  };
+
+  const requestModerateProductConfirmation = (prod: Product, nextStatus: 'ACTIVE' | 'SUSPENDED') => {
+    setConfirmModal({
+      isOpen: true,
+      title: nextStatus === 'SUSPENDED' ? `Suspend "${prod.name}"?` : `Reactivate "${prod.name}"?`,
+      description:
+        nextStatus === 'SUSPENDED'
+          ? `Are you sure you want to suspend "${prod.name}"? It will be immediately delisted from the public marketplace.`
+          : `Are you sure you want to reactivate "${prod.name}"? It will become publicly visible and purchasable again.`,
+      confirmText: nextStatus === 'SUSPENDED' ? 'Suspend Listing' : 'Reactivate Listing',
+      variant: nextStatus === 'SUSPENDED' ? 'danger' : 'success',
+      action: async () => {
+        setIsActionLoading(true);
+        try {
+          await onModerateProduct(prod.id, nextStatus);
+          setToast({
+            isOpen: true,
+            message: `Product "${prod.name}" has been ${nextStatus.toLowerCase()}!`,
+            type: 'success',
+          });
+          setConfirmModal(null);
+        } catch (err: any) {
+          setToast({ isOpen: true, message: err.message || 'Failed to moderate product', type: 'error' });
+        } finally {
+          setIsActionLoading(false);
+        }
+      },
+    });
+  };
+
+  const requestDeactivateCategoryConfirmation = (cat: Category) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `Deactivate Category "${cat.name}"?`,
+      description: `Are you sure you want to deactivate "${cat.name}"? New products cannot be assigned to this category while deactivated.`,
+      confirmText: 'Deactivate Category',
+      variant: 'danger',
+      action: async () => {
+        setIsActionLoading(true);
+        try {
+          await onDeactivateCategory(cat.id);
+          setToast({ isOpen: true, message: `Category "${cat.name}" has been deactivated.`, type: 'info' });
+          setConfirmModal(null);
+        } catch (err: any) {
+          setToast({ isOpen: true, message: err.message || 'Failed to deactivate category', type: 'error' });
+        } finally {
+          setIsActionLoading(false);
+        }
+      },
+    });
   };
 
   const handleTriggerSeed = async () => {
@@ -103,6 +284,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsSeeding(true);
     try {
       await onSeed100Products();
+      setToast({ isOpen: true, message: 'Marketplace catalog reseeded with 100 products!', type: 'success' });
+    } catch (err: any) {
+      setToast({ isOpen: true, message: err.message || 'Reseeding failed', type: 'error' });
     } finally {
       setIsSeeding(false);
     }
@@ -121,7 +305,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <h2 className="font-display text-lg sm:text-xl font-extrabold text-surface-950 truncate">Super Admin Console</h2>
               <Badge variant="admin" size="sm" dot className="shrink-0">Platform Governance</Badge>
             </div>
-            <p className="text-xs text-surface-500 truncate">Marketplace Metrics, Vendor Directory, Catalog Moderation & 100-Product Seeder</p>
+            <p className="text-xs text-surface-500 truncate">Marketplace Metrics, Vendor Directory, Catalog Moderation & Taxonomy</p>
           </div>
         </div>
 
@@ -194,66 +378,97 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </CardDescription>
             </div>
             <Badge variant="success" size="sm" className="self-start sm:self-auto">
-              4 Active Stores
+              Showing {filteredVendors.length} of {vendors.length} Stores
             </Badge>
           </div>
 
+          {/* Search Bar for Approved Vendors */}
+          <div className="p-4 border-b border-surface-200 bg-surface-50/70 flex items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
+              <input
+                type="text"
+                placeholder="Search vendor stores by business name, phone, address..."
+                value={vendorSearch}
+                onChange={(e) => setVendorSearch(e.target.value)}
+                className="w-full pl-10 pr-9 py-2 rounded-xl text-xs bg-white border border-surface-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-surface-900 placeholder:text-surface-400 transition-all"
+              />
+              {vendorSearch && (
+                <button
+                  type="button"
+                  onClick={() => setVendorSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 p-0.5"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
           <div className="overflow-x-auto custom-scrollbar overscroll-contain">
-            <table className="w-full text-left text-xs min-w-[620px]">
-              <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200">
-                <tr>
-                  <th className="py-3 px-4">Merchant Store</th>
-                  <th className="py-3 px-4">Contact & Location</th>
-                  <th className="py-3 px-4">Assigned Products</th>
-                  <th className="py-3 px-4">Rating</th>
-                  <th className="py-3 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-100">
-                {vendors.map((v) => (
-                  <tr key={v.id} className="hover:bg-surface-50/50">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-extrabold text-sm shrink-0">
-                          <Store className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <span className="font-bold text-surface-900 text-sm block">{v.businessName}</span>
-                          <span className="text-[11px] text-surface-500 line-clamp-1">{v.description || 'Specialized merchant store'}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-surface-600">
-                      <div className="space-y-0.5">
-                        <span className="flex items-center gap-1 font-medium text-surface-800">
-                          <Phone className="h-3 w-3 text-surface-400" /> {v.phone || '+91 98765 43210'}
-                        </span>
-                        <span className="flex items-center gap-1 text-[11px] text-surface-500">
-                          <MapPin className="h-3 w-3 text-surface-400" /> {v.businessAddress || 'Bengaluru, Karnataka'}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="font-extrabold text-surface-900 text-sm">
-                        {v.productCount ?? products.filter((p) => p.vendorId === v.id).length}
-                      </span>{' '}
-                      <span className="text-surface-400 text-xs">products</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 font-bold border border-amber-200/80">
-                        <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
-                        <span>{(v.rating || 4.9).toFixed(1)}</span>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <Badge variant="success" size="sm">
-                        APPROVED
-                      </Badge>
-                    </td>
+            {filteredVendors.length === 0 ? (
+              <div className="p-12 text-center text-surface-400 space-y-2">
+                <Store className="h-10 w-10 mx-auto text-surface-300" />
+                <p className="text-sm font-bold text-surface-700">No merchant stores matched your search</p>
+                <p className="text-xs text-surface-400">Clear the search bar to see all active stores.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs min-w-[620px]">
+                <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200">
+                  <tr>
+                    <th className="py-3 px-4">Merchant Store</th>
+                    <th className="py-3 px-4">Contact & Location</th>
+                    <th className="py-3 px-4">Assigned Products</th>
+                    <th className="py-3 px-4">Rating</th>
+                    <th className="py-3 px-4">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-surface-100">
+                  {filteredVendors.map((v) => (
+                    <tr key={v.id} className="hover:bg-surface-50/50">
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-9 w-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-extrabold text-sm shrink-0">
+                            <Store className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <span className="font-bold text-surface-900 text-sm block">{v.businessName}</span>
+                            <span className="text-[11px] text-surface-500 line-clamp-1">{v.description || 'Specialized merchant store'}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-surface-600">
+                        <div className="space-y-0.5">
+                          <span className="flex items-center gap-1 font-medium text-surface-800">
+                            <Phone className="h-3 w-3 text-surface-400" /> {v.phone || '+91 98765 43210'}
+                          </span>
+                          <span className="flex items-center gap-1 text-[11px] text-surface-500">
+                            <MapPin className="h-3 w-3 text-surface-400" /> {v.businessAddress || 'Bengaluru, Karnataka'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="font-extrabold text-surface-900 text-sm">
+                          {v.productCount ?? products.filter((p) => p.vendorId === v.id).length}
+                        </span>{' '}
+                        <span className="text-surface-400 text-xs">products</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 font-bold border border-amber-200/80">
+                          <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                          <span>{(v.rating || 4.9).toFixed(1)}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <Badge variant="success" size="sm">
+                          APPROVED
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </Card>
       )}
@@ -261,18 +476,64 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Tab 1: Vendor Applications Review */}
       {activeTab === 'applications' && (
         <Card variant="glass" className="p-0 overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-surface-200">
-            <CardTitle className="text-base">Merchant Onboarding Queue</CardTitle>
-            <CardDescription className="text-xs">
-              Review and approve storefronts to sell on the marketplace.
-            </CardDescription>
+          <div className="p-4 sm:p-5 border-b border-surface-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-base">Merchant Onboarding Queue</CardTitle>
+              <CardDescription className="text-xs">
+                Review and approve or reject applicant storefronts to sell on BazaarOne.
+              </CardDescription>
+            </div>
+            <span className="text-xs font-semibold text-surface-500">
+              Showing {filteredApplications.length} of {applications.length} applications
+            </span>
           </div>
 
-          {applications.length === 0 ? (
-            <div className="p-12 text-center text-surface-400">
-              <CheckCircle2 className="h-10 w-10 mx-auto mb-2 text-emerald-500 opacity-60" />
-              <p className="text-sm font-semibold">No pending vendor applications</p>
-              <p className="text-xs text-surface-400 mt-1">All applicant storefronts have been evaluated.</p>
+          {/* Search & Status Filters for Applications */}
+          <div className="p-4 border-b border-surface-200 bg-surface-50/70 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
+              <input
+                type="text"
+                placeholder="Search by store name, applicant name, email, GSTIN..."
+                value={appSearch}
+                onChange={(e) => setAppSearch(e.target.value)}
+                className="w-full pl-10 pr-9 py-2 rounded-xl text-xs bg-white border border-surface-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-surface-900 placeholder:text-surface-400 transition-all"
+              />
+              {appSearch && (
+                <button
+                  type="button"
+                  onClick={() => setAppSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 p-0.5"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-surface-500 font-semibold shrink-0">Filter Status:</span>
+              <select
+                value={appStatusFilter}
+                onChange={(e) => setAppStatusFilter(e.target.value as any)}
+                className="text-xs py-2 px-3 rounded-xl bg-white border border-surface-200 text-surface-700 focus:outline-none focus:border-purple-600 font-medium"
+              >
+                <option value="ALL">All Applications</option>
+                <option value="PENDING">Pending Review ({applications.filter((a) => a.status === 'PENDING').length})</option>
+                <option value="APPROVED">Approved ({applications.filter((a) => a.status === 'APPROVED').length})</option>
+                <option value="REJECTED">Rejected ({applications.filter((a) => a.status === 'REJECTED').length})</option>
+              </select>
+            </div>
+          </div>
+
+          {filteredApplications.length === 0 ? (
+            <div className="p-12 text-center text-surface-400 space-y-2">
+              <CheckCircle2 className="h-10 w-10 mx-auto text-emerald-500 opacity-60" />
+              <p className="text-sm font-semibold text-surface-700">No applications found</p>
+              <p className="text-xs text-surface-400">
+                {appSearch || appStatusFilter !== 'ALL'
+                  ? 'No vendor applications match your filter criteria.'
+                  : 'All applicant storefronts have been evaluated.'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto custom-scrollbar overscroll-contain">
@@ -288,7 +549,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-100">
-                  {applications.map((app) => (
+                  {filteredApplications.map((app) => (
                     <tr key={app.id} className="hover:bg-surface-50/50">
                       <td className="py-3 px-4">
                         <span className="font-bold text-surface-900 block">{app.businessName}</span>
@@ -348,20 +609,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <Button
                               variant="primary"
                               size="sm"
-                              onClick={() => onReviewApplication(app.id, 'APPROVED')}
+                              onClick={() => requestReviewAppConfirmation(app, 'APPROVED')}
+                              className="font-bold shadow-2xs"
                             >
                               Approve
                             </Button>
                             <Button
                               variant="danger"
                               size="sm"
-                              onClick={() => onReviewApplication(app.id, 'REJECTED')}
+                              onClick={() => requestReviewAppConfirmation(app, 'REJECTED')}
+                              className="font-bold shadow-2xs"
                             >
                               Reject
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-surface-400 font-semibold uppercase">Completed</span>
+                          <span className="text-[10px] text-surface-400 font-semibold uppercase">{app.status}</span>
                         )}
                       </td>
                     </tr>
@@ -376,71 +639,106 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Tab 2: Product Moderation */}
       {activeTab === 'products' && (
         <Card variant="glass" className="p-0 overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-surface-200">
-            <CardTitle className="text-base">Platform Product Moderation</CardTitle>
-            <CardDescription className="text-xs">
-              Audit listings across all vendors and toggle catalog visibility.
-            </CardDescription>
+          <div className="p-4 sm:p-5 border-b border-surface-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-base">Platform Product Moderation</CardTitle>
+              <CardDescription className="text-xs">
+                Audit listings across all vendors and toggle catalog visibility.
+              </CardDescription>
+            </div>
+            <span className="text-xs font-semibold text-surface-500">
+              Showing {filteredProducts.length} of {products.length} products
+            </span>
+          </div>
+
+          {/* Search Bar for Product Moderation */}
+          <div className="p-4 border-b border-surface-200 bg-surface-50/70">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
+              <input
+                type="text"
+                placeholder="Search products by title, vendor, category, SKU..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="w-full pl-10 pr-9 py-2 rounded-xl text-xs bg-white border border-surface-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 text-surface-900 placeholder:text-surface-400 transition-all"
+              />
+              {productSearch && (
+                <button
+                  type="button"
+                  onClick={() => setProductSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600 p-0.5"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="overflow-x-auto max-h-96 overflow-y-auto custom-scrollbar overscroll-contain">
-            <table className="w-full text-left text-xs min-w-[620px]">
-              <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200 sticky top-0 bg-white/95 backdrop-blur-xs z-10">
-                <tr>
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-4">Merchant</th>
-                  <th className="py-3 px-4">Category</th>
-                  <th className="py-3 px-4">Price</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Moderation Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-100">
-                {products.map((prod) => (
-                  <tr key={prod.id} className="hover:bg-surface-50/50">
-                    <td className="py-3 px-4 font-bold text-surface-900 max-w-xs truncate">
-                      {prod.name}
-                    </td>
-                    <td className="py-3 px-4 text-surface-600 font-medium">
-                      {prod.vendor?.businessName || 'Apex Electronics'}
-                    </td>
-                    <td className="py-3 px-4 text-surface-600 font-medium">
-                      {prod.category?.name || 'Category'}
-                    </td>
-                    <td className="py-3 px-4 font-bold text-surface-900">
-                      ₹{(prod.discountPrice ?? prod.price).toLocaleString('en-IN')}
-                    </td>
-                    <td className="py-3 px-4">
-                      <Badge
-                        variant={prod.status === 'ACTIVE' ? 'success' : prod.status === 'SUSPENDED' ? 'error' : 'neutral'}
-                        size="sm"
-                      >
-                        {prod.status}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      {prod.status === 'ACTIVE' ? (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => onModerateProduct(prod.id, 'SUSPENDED')}
-                        >
-                          Suspend
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={() => onModerateProduct(prod.id, 'ACTIVE')}
-                        >
-                          Reactivate
-                        </Button>
-                      )}
-                    </td>
+            {filteredProducts.length === 0 ? (
+              <div className="p-12 text-center text-surface-400">
+                <Package className="h-10 w-10 mx-auto mb-2 text-surface-300" />
+                <p className="text-sm font-bold text-surface-700">No products match your search</p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs min-w-[620px]">
+                <thead className="bg-surface-50 text-surface-500 font-semibold border-b border-surface-200 sticky top-0 bg-white/95 backdrop-blur-xs z-10">
+                  <tr>
+                    <th className="py-3 px-4">Product</th>
+                    <th className="py-3 px-4">Merchant</th>
+                    <th className="py-3 px-4">Category</th>
+                    <th className="py-3 px-4">Price</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Moderation Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-surface-100">
+                  {filteredProducts.map((prod) => (
+                    <tr key={prod.id} className="hover:bg-surface-50/50">
+                      <td className="py-3 px-4 font-bold text-surface-900 max-w-xs truncate">
+                        {prod.name}
+                      </td>
+                      <td className="py-3 px-4 text-surface-600 font-medium">
+                        {prod.vendor?.businessName || 'Merchant'}
+                      </td>
+                      <td className="py-3 px-4 text-surface-600 font-medium">
+                        {prod.category?.name || 'Category'}
+                      </td>
+                      <td className="py-3 px-4 font-bold text-surface-900">
+                        ₹{(prod.discountPrice ?? prod.price).toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Badge
+                          variant={prod.status === 'ACTIVE' ? 'success' : prod.status === 'SUSPENDED' ? 'error' : 'neutral'}
+                          size="sm"
+                        >
+                          {prod.status}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        {prod.status === 'ACTIVE' ? (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => requestModerateProductConfirmation(prod, 'SUSPENDED')}
+                          >
+                            Suspend
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => requestModerateProductConfirmation(prod, 'ACTIVE')}
+                          >
+                            Reactivate
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </Card>
       )}
@@ -451,48 +749,76 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Categories Manager */}
           <Card variant="glass" className="space-y-4 p-4 sm:p-6">
             <CardHeader className="p-0">
-              <CardTitle className="text-base">12 Standard Categories ({categories.length})</CardTitle>
+              <CardTitle className="text-base">Standard Categories ({categories.length})</CardTitle>
               <CardDescription className="text-xs">
-                Manage global taxonomy tree.
+                Search taxonomy hierarchy or add new marketplace categories.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-0">
-              <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-2">
+              {/* Dedicated Category Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-surface-400" />
+                <input
+                  type="text"
+                  placeholder="Search categories by name or slug..."
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-white border border-surface-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-surface-900 placeholder:text-surface-400"
+                />
+                {categorySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCategorySearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Add New Category Form */}
+              <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-surface-100">
                 <Input
-                  placeholder="New Category Name"
+                  placeholder="New Category Name (e.g. Pet Supplies)"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
                   required
                   className="flex-1"
                 />
-                <Button type="submit" variant="primary" size="md" className="shrink-0">
-                  Add
+                <Button type="submit" variant="primary" size="md" className="shrink-0 font-bold">
+                  Add Category
                 </Button>
               </form>
 
+              {/* Filtered Categories List */}
               <div className="divide-y divide-surface-100 max-h-60 overflow-y-auto custom-scrollbar overscroll-contain pr-1">
-                {categories.map((c) => (
-                  <div key={c.id} className="py-2.5 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <span className="font-bold text-surface-900 text-xs block truncate">{c.name}</span>
-                      <span className="text-[10px] text-surface-400 truncate">Slug: {c.slug}</span>
+                {filteredCategories.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-surface-400">No categories match &ldquo;{categorySearch}&rdquo;</p>
+                ) : (
+                  filteredCategories.map((c) => (
+                    <div key={c.id} className="py-2.5 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="font-bold text-surface-900 text-xs block truncate">{c.name}</span>
+                        <span className="text-[10px] text-surface-400 truncate">Slug: {c.slug}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant={c.isActive ? 'success' : 'neutral'} size="sm">
+                          {c.isActive ? 'Active' : 'Deactivated'}
+                        </Badge>
+                        {c.isActive && (
+                          <button
+                            type="button"
+                            onClick={() => requestDeactivateCategoryConfirmation(c)}
+                            className="text-surface-400 hover:text-rose-600 p-1 rounded-lg transition-colors"
+                            title="Deactivate safely"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant={c.isActive ? 'success' : 'neutral'} size="sm">
-                        {c.isActive ? 'Active' : 'Deactivated'}
-                      </Badge>
-                      {c.isActive && (
-                        <button
-                          onClick={() => onDeactivateCategory(c.id)}
-                          className="text-surface-400 hover:text-rose-600 p-1 rounded-lg transition-colors"
-                          title="Deactivate safely"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -500,42 +826,92 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Brands Manager */}
           <Card variant="glass" className="space-y-4 p-4 sm:p-6">
             <CardHeader className="p-0">
-              <CardTitle className="text-base">Verified Merchant Brands ({brands.length})</CardTitle>
+              <CardTitle className="text-base">Product Brands &amp; Manufacturers ({brands.length})</CardTitle>
               <CardDescription className="text-xs">
-                Register verified artisan guilds and brands.
+                Product brand labels and manufacturers (e.g. Apex Audio, Urban Stitch) that merchant vendors assign to products.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 p-0">
-              <form onSubmit={handleAddBrand} className="flex flex-col sm:flex-row gap-2">
+              {/* Dedicated Brand Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-surface-400" />
+                <input
+                  type="text"
+                  placeholder="Search brands by name or slug..."
+                  value={brandSearch}
+                  onChange={(e) => setBrandSearch(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-white border border-surface-200 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-surface-900 placeholder:text-surface-400"
+                />
+                {brandSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setBrandSearch('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Add New Brand Form */}
+              <form onSubmit={handleAddBrand} className="flex flex-col sm:flex-row gap-2 pt-1 border-t border-surface-100">
                 <Input
-                  placeholder="New Brand Name"
+                  placeholder="New Brand Name (e.g. Royal Silk Guild)"
                   value={newBrandName}
                   onChange={(e) => setNewBrandName(e.target.value)}
                   required
                   className="flex-1"
                 />
-                <Button type="submit" variant="primary" size="md" className="shrink-0">
-                  Add
+                <Button type="submit" variant="primary" size="md" className="shrink-0 font-bold">
+                  Register Brand
                 </Button>
               </form>
 
+              {/* Filtered Brands List */}
               <div className="divide-y divide-surface-100 max-h-60 overflow-y-auto custom-scrollbar overscroll-contain pr-1">
-                {brands.map((b) => (
-                  <div key={b.id} className="py-2.5 flex items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <span className="font-bold text-surface-900 text-xs block truncate">{b.name}</span>
-                      <span className="text-[10px] text-surface-400 truncate">Slug: {b.slug}</span>
+                {filteredBrands.length === 0 ? (
+                  <p className="py-4 text-center text-xs text-surface-400">No brands match &ldquo;{brandSearch}&rdquo;</p>
+                ) : (
+                  filteredBrands.map((b) => (
+                    <div key={b.id} className="py-2.5 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="font-bold text-surface-900 text-xs block truncate">{b.name}</span>
+                        <span className="text-[10px] text-surface-400 truncate">Slug: {b.slug}</span>
+                      </div>
+                      <Badge variant={b.isActive ? 'success' : 'neutral'} size="sm" className="shrink-0">
+                        {b.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
                     </div>
-                    <Badge variant={b.isActive ? 'success' : 'neutral'} size="sm" className="shrink-0">
-                      {b.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <ConfirmationModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal(null)}
+          onConfirm={confirmModal.action}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          confirmText={confirmModal.confirmText}
+          cancelText="Cancel"
+          variant={confirmModal.variant}
+          isLoading={isActionLoading}
+        />
+      )}
+
+      {/* Floating Feedback Toast Notification */}
+      <Toast
+        isOpen={toast.isOpen}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

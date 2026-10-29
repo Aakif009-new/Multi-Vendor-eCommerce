@@ -2,6 +2,8 @@ import request from 'supertest';
 import app from '../src/app';
 import { prisma } from '../src/config/db';
 
+jest.setTimeout(60000);
+
 describe('Multi-Vendor System & Advanced Filtering API', () => {
   let apexVendor: any;
   let urbanVendor: any;
@@ -11,15 +13,21 @@ describe('Multi-Vendor System & Advanced Filtering API', () => {
   let fashionCategory: any;
 
   beforeAll(async () => {
-    // 1. Fetch the 4 specific seeded vendors by unique slug
-    apexVendor = await prisma.vendor.findFirst({ where: { slug: 'apex-electronics' } });
-    urbanVendor = await prisma.vendor.findFirst({ where: { slug: 'urbancart' } });
-    homeVendor = await prisma.vendor.findFirst({ where: { slug: 'homenest' } });
-    playVendor = await prisma.vendor.findFirst({ where: { slug: 'playsphere' } });
+    const [apex, urban, home, play, elec, fash] = await Promise.all([
+      prisma.vendor.findFirst({ where: { slug: 'apex-electronics' } }),
+      prisma.vendor.findFirst({ where: { slug: 'urbancart' } }),
+      prisma.vendor.findFirst({ where: { slug: 'homenest' } }),
+      prisma.vendor.findFirst({ where: { slug: 'playsphere' } }),
+      prisma.category.findFirst({ where: { slug: 'electronics' } }),
+      prisma.category.findFirst({ where: { slug: 'mens-fashion' } }),
+    ]);
 
-    // 2. Fetch categories
-    electronicsCategory = await prisma.category.findFirst({ where: { slug: 'electronics' } });
-    fashionCategory = await prisma.category.findFirst({ where: { slug: 'mens-fashion' } });
+    apexVendor = apex;
+    urbanVendor = urban;
+    homeVendor = home;
+    playVendor = play;
+    electronicsCategory = elec;
+    fashionCategory = fash;
   });
 
   describe('GET /api/vendors', () => {

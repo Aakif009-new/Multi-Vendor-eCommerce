@@ -32,8 +32,9 @@ export class CloudinaryService {
         },
         (error, result) => {
           if (error || !result) {
-            console.error('Cloudinary upload error:', error);
-            return reject(new AppError('Failed to upload image asset to Cloudinary', 502));
+            const errorMsg = error?.message || 'Remote storage service unreachable or upload failed.';
+            console.error('Cloudinary uploadBuffer error:', errorMsg);
+            return reject(new AppError(`Cloudinary image upload failed: ${errorMsg}`, 502));
           }
           resolve({
             url: result.url,

@@ -21,6 +21,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
   register: (data: any) => Promise<AuthUser>;
+  setAuthUser: (user: AuthUser | null) => void;
   logout: () => Promise<void>;
   refreshUser: (force?: boolean) => Promise<AuthUser | null>;
 }
@@ -42,6 +43,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
   });
+
+  const setAuthUser = React.useCallback((newUser: AuthUser | null) => {
+    setUser(newUser);
+    setIsLoading(false);
+    if (typeof window !== 'undefined') {
+      try {
+        if (newUser) {
+          localStorage.setItem(SESSION_STORAGE_KEY, 'true');
+        } else {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+        }
+      } catch {}
+    }
+  }, []);
 
   const refreshUser = React.useCallback(async (force = false): Promise<AuthUser | null> => {
     // Fast path: Check if any indicator of session exists
@@ -103,59 +118,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshUser]);
 
   const login = async (email: string, password: string): Promise<AuthUser> => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+    });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Invalid email or password.');
-      }
-
-      setUser(data.data.user);
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, 'true');
-      } catch {}
-      return data.data.user;
-    } finally {
-      setIsLoading(false);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Invalid email or password.');
     }
+
+    const authUser: AuthUser = data.data.user;
+    setUser(authUser);
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, 'true');
+    } catch {}
+    return authUser;
   };
 
   const register = async (formData: any): Promise<AuthUser> => {
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
-      });
+    const isFormData = typeof FormData !== 'undefined' && formData instanceof FormData;
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      },
+      credentials: 'include',
+      body: isFormData ? formData : JSON.stringify(formData),
+    });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Registration failed.');
-      }
-
-      setUser(data.data.user);
-      try {
-        localStorage.setItem(SESSION_STORAGE_KEY, 'true');
-      } catch {}
-      return data.data.user;
-    } finally {
-      setIsLoading(false);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Registration failed.');
     }
+
+    const authUser: AuthUser = data.data.user;
+    setUser(authUser);
+    try {
+      localStorage.setItem(SESSION_STORAGE_KEY, 'true');
+    } catch {}
+    return authUser;
   };
 
   const logout = async (): Promise<void> => {
@@ -166,13 +174,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     } catch {}
     setUser(null);
+    setIsLoading(false);
     try {
       localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch {}
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, setAuthUser, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

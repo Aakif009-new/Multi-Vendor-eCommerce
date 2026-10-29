@@ -8,7 +8,6 @@ export class VendorService {
       where: {
         status: 'APPROVED',
         accountStatus: 'ACTIVE',
-        products: { some: { status: 'ACTIVE' } },
       },
       select: {
         id: true,

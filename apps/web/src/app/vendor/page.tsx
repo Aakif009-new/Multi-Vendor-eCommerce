@@ -27,7 +27,7 @@ export default function VendorPageRoute() {
 
   const fetchVendorProducts = async () => {
     try {
-      const res = await fetch('/api/vendors/me/products');
+      const res = await fetch('/api/vendors/me/products', { credentials: 'include' });
       const d = await res.json();
       if (d.success && Array.isArray(d.data)) {
         setProducts(d.data);
@@ -37,7 +37,7 @@ export default function VendorPageRoute() {
 
   const fetchVendorOrders = async () => {
     try {
-      const res = await fetch('/api/orders/vendor');
+      const res = await fetch('/api/orders/vendor', { credentials: 'include' });
       const d = await res.json();
       if (d.success && Array.isArray(d.data)) {
         setVendorOrders(d.data);
@@ -50,14 +50,14 @@ export default function VendorPageRoute() {
       fetchVendorProducts();
       fetchVendorOrders();
 
-      fetch('/api/categories')
+      fetch('/api/categories', { credentials: 'include' })
         .then((r) => r.json())
         .then((d) => {
           if (d.success && d.data) setCategories(d.data);
         })
         .catch(() => {});
 
-      fetch('/api/brands')
+      fetch('/api/brands', { credentials: 'include' })
         .then((r) => r.json())
         .then((d) => {
           if (d.success && d.data) setBrands(d.data);
@@ -70,6 +70,7 @@ export default function VendorPageRoute() {
     const res = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -83,6 +84,7 @@ export default function VendorPageRoute() {
     const res = await fetch(`/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -95,6 +97,7 @@ export default function VendorPageRoute() {
   const handleDeleteProduct = async (id: string) => {
     const res = await fetch(`/api/products/${id}`, {
       method: 'DELETE',
+      credentials: 'include',
     });
     const json = await res.json();
     if (!res.ok || !json.success) {
@@ -107,6 +110,7 @@ export default function VendorPageRoute() {
     const res = await fetch(`/api/products/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status }),
     });
     const json = await res.json();
@@ -120,6 +124,7 @@ export default function VendorPageRoute() {
     const res = await fetch(`/api/orders/vendor/items/${orderItemId}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status }),
     });
     const json = await res.json();

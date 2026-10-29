@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Store, Shield, AlertCircle } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { useAuth } from '@/context/AuthContext';
 
 export interface LoginFormProps {
   onSuccess?: (user: { id: string; name: string; email: string; role: string }) => void;
@@ -14,6 +15,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   onSuccess,
   onSwitchToRegister,
 }) => {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -63,24 +65,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-      });
+      const loggedUser = await login(email.trim().toLowerCase(), password);
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Invalid email or password.');
-      }
-
-      if (onSuccess && data.data?.user) {
-        onSuccess(data.data.user);
+      if (onSuccess) {
+        onSuccess(loggedUser);
       }
     } catch (err: any) {
       setServerError(err.message || 'Could not log in. Please verify your credentials.');

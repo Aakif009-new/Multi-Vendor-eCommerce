@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env from workspace root or current working directory
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '../../.env') });
-dotenv.config(); // fallback
+// Load .env from workspace root or current working directory with override enabled
+dotenv.config({ path: path.resolve(__dirname, '../../../.env'), override: true });
+dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: true });
+dotenv.config({ path: path.resolve(process.cwd(), '../../.env'), override: true });
+dotenv.config({ override: true }); // fallback
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
@@ -18,7 +18,7 @@ export const env = {
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000, *.vercel.app',
 
   // Cloudinary Image Storage
-  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 'MULTI-VENDOR',
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || 's25ni42x',
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || '923119275161814',
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || '8dkmYoaMxt_bgshJADeq547Fd9E',
 

@@ -37,7 +37,7 @@ export default function AdminPageRoute() {
 
   const fetchStats = async () => {
     try {
-      const r = await fetch('/api/admin/stats');
+      const r = await fetch('/api/admin/stats', { credentials: 'include' });
       const d = await r.json();
       if (d.success && d.data) setStats(d.data);
     } catch {}
@@ -45,7 +45,7 @@ export default function AdminPageRoute() {
 
   const fetchApplications = async () => {
     try {
-      const r = await fetch('/api/admin/vendor-applications');
+      const r = await fetch('/api/admin/vendor-applications', { credentials: 'include' });
       const d = await r.json();
       if (d.success && Array.isArray(d.data)) setApplications(d.data);
     } catch {}
@@ -53,7 +53,7 @@ export default function AdminPageRoute() {
 
   const fetchVendors = async () => {
     try {
-      const r = await fetch('/api/vendors');
+      const r = await fetch('/api/vendors', { credentials: 'include' });
       const d = await r.json();
       if (d.success && Array.isArray(d.data)) setVendors(d.data);
     } catch {}
@@ -61,7 +61,7 @@ export default function AdminPageRoute() {
 
   const fetchProducts = async () => {
     try {
-      const r = await fetch('/api/products?limit=100');
+      const r = await fetch('/api/products?limit=100', { credentials: 'include' });
       const d = await r.json();
       if (d.success && Array.isArray(d.data)) setProducts(d.data);
     } catch {}
@@ -69,7 +69,7 @@ export default function AdminPageRoute() {
 
   const fetchCategories = async () => {
     try {
-      const r = await fetch('/api/categories');
+      const r = await fetch('/api/categories', { credentials: 'include' });
       const d = await r.json();
       if (d.success && Array.isArray(d.data)) setCategories(d.data);
     } catch {}
@@ -77,7 +77,7 @@ export default function AdminPageRoute() {
 
   const fetchBrands = async () => {
     try {
-      const r = await fetch('/api/brands');
+      const r = await fetch('/api/brands', { credentials: 'include' });
       const d = await r.json();
       if (d.success && Array.isArray(d.data)) setBrands(d.data);
     } catch {}
@@ -98,6 +98,7 @@ export default function AdminPageRoute() {
     const res = await fetch(`/api/admin/vendor-applications/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status }),
     });
     const json = await res.json();
@@ -111,6 +112,7 @@ export default function AdminPageRoute() {
     const res = await fetch(`/api/admin/products/${id}/moderate`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ status }),
     });
     const json = await res.json();
@@ -124,6 +126,7 @@ export default function AdminPageRoute() {
     const res = await fetch('/api/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -137,6 +140,7 @@ export default function AdminPageRoute() {
     const res = await fetch('/api/brands', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -149,6 +153,7 @@ export default function AdminPageRoute() {
   const handleDeactivateCategory = async (id: string) => {
     const res = await fetch(`/api/categories/${id}`, {
       method: 'DELETE',
+      credentials: 'include',
     });
     const json = await res.json();
     if (!res.ok || !json.success) {
@@ -160,6 +165,7 @@ export default function AdminPageRoute() {
   const handleSeed100Products = async () => {
     const res = await fetch('/api/seed/100-products', {
       method: 'POST',
+      credentials: 'include',
     });
     const json = await res.json();
     if (!res.ok || !json.success) {

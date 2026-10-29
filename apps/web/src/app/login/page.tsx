@@ -15,13 +15,13 @@ export default function LoginPage() {
 
   const handleRoleRedirect = (authUser?: { role?: string }) => {
     const role = authUser?.role || user?.role;
+    let target = '/';
     if (role === 'ADMIN') {
-      router.push('/admin');
+      target = '/admin';
     } else if (role === 'VENDOR') {
-      router.push('/vendor');
-    } else {
-      router.push('/');
+      target = '/vendor';
     }
+    window.location.replace(target);
   };
 
   // If already authenticated, redirect to role destination

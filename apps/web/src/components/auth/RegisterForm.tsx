@@ -28,6 +28,7 @@ import { Button } from '../ui/Button';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { validateGstinClient } from '@/lib/gstinValidator';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 export interface RegisterFormProps {
   onSuccess?: (user: { id: string; name: string; email: string; role: string }) => void;
@@ -44,6 +45,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSuccess,
   onSwitchToLogin,
 }) => {
+  const { register } = useAuth();
   const [role, setRole] = useState<'CUSTOMER' | 'VENDOR'>('CUSTOMER');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -67,6 +69,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const [successUser, setSuccessUser] = useState<any | null>(null);
 
   // Real-time GSTIN validation calculation
   const gstinResult = useMemo(() => {
@@ -282,7 +285,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     setIsLoading(true);
 
     try {
-      let res: Response;
+      let registeredUser;
 
       if (role === 'VENDOR' && panFile) {
         // Send multipart form data with file attached
@@ -302,14 +305,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
         formData.append('panDocument', panFile);
 
-        res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-          },
-          credentials: 'include',
-          body: formData,
-        });
+        registeredUser = await register(formData);
       } else {
         // Standard JSON payload (Customer accounts or API fallback)
         const payload: Record<string, any> = {
@@ -329,25 +325,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           }
         }
 
-        res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify(payload),
-        });
+        registeredUser = await register(payload);
       }
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Registration failed.');
-      }
-
-      if (onSuccess && data.data?.user) {
-        onSuccess(data.data.user);
+      if (registeredUser) {
+        setSuccessUser(registeredUser);
       }
     } catch (err: any) {
       setServerError(err.message || 'Could not complete registration.');
@@ -358,6 +340,63 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
   const isConfirmPasswordMatch =
     password && confirmPassword && password === confirmPassword;
+
+  if (successUser) {
+    const isVendor = successUser.role === 'VENDOR';
+    return (
+      <div className="p-4 sm:p-6 text-center space-y-5 animate-scale-up">
+        <div className="h-16 w-16 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md shadow-emerald-500/20">
+          <CheckCircle2 className="h-9 w-9" />
+        </div>
+        <div className="space-y-1.5">
+          <h3 className="font-display text-xl font-extrabold text-surface-950">
+            {isVendor ? 'Vendor Application Submitted!' : 'Registration Completed Successfully!'}
+          </h3>
+          <p className="text-xs text-surface-600 leading-relaxed max-w-sm mx-auto">
+            {isVendor
+              ? 'Your merchant store application has been registered with compliance records. Your application is now in the review queue for administrator approval.'
+              : `Welcome to BazaarOne, ${successUser.name || 'valued customer'}! Your customer account is active and ready to use.`}
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-surface-50 border border-surface-200/80 text-left text-xs space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-surface-500">Account Type:</span>
+            <span className="font-bold text-surface-900">{isVendor ? 'Merchant Storefront' : 'Customer Account'}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-surface-500">Registered Email:</span>
+            <span className="font-semibold text-surface-800">{successUser.email}</span>
+          </div>
+          {isVendor && businessName && (
+            <div className="flex justify-between items-center">
+              <span className="text-surface-500">Store Name:</span>
+              <span className="font-bold text-amber-700">{businessName}</span>
+            </div>
+          )}
+          {isVendor && gstin && (
+            <div className="flex justify-between items-center">
+              <span className="text-surface-500">GSTIN:</span>
+              <span className="font-mono font-bold text-surface-800">{gstin.toUpperCase()}</span>
+            </div>
+          )}
+        </div>
+
+        <Button
+          type="button"
+          variant="primary"
+          size="lg"
+          className="w-full font-bold shadow-md shadow-brand-600/20"
+          onClick={() => {
+            if (onSuccess) onSuccess(successUser);
+          }}
+          rightIcon={<ArrowRight className="h-4 w-4" />}
+        >
+          {isVendor ? 'Continue to Vendor Portal' : 'Continue to Marketplace'}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-left" noValidate>

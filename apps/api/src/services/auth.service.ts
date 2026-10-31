@@ -77,6 +77,7 @@ export class AuthService {
       },
     });
 
+    let createdVendor: any = null;
     // If registering as VENDOR, initiate pending Vendor profile & application
     if (assignedRole === 'VENDOR') {
       const bName = (input.businessName && input.businessName.trim()) || `${trimmedName}'s Store`;
@@ -90,7 +91,7 @@ export class AuthService {
       const resolvedPan = input.panNumber ? input.panNumber.trim().toUpperCase() : extractedPan;
       const legalStructure = input.legalStructure || 'SOLE_PROPRIETORSHIP';
 
-      const vendor = await prisma.vendor.create({
+      createdVendor = await prisma.vendor.create({
         data: {
           userId: user.id,
           businessName: bName,
@@ -110,7 +111,7 @@ export class AuthService {
       await prisma.vendorApplication.create({
         data: {
           userId: user.id,
-          vendorId: vendor.id,
+          vendorId: createdVendor.id,
           businessName: bName,
           businessAddress: bAddress,
           phone: bPhone,
@@ -130,7 +131,23 @@ export class AuthService {
       role: user.role,
     });
 
-    return { user, token };
+    const safeUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      createdAt: user.createdAt,
+      vendor: createdVendor ? {
+        id: createdVendor.id,
+        businessName: createdVendor.businessName,
+        slug: createdVendor.slug,
+        status: createdVendor.status,
+        accountStatus: createdVendor.accountStatus,
+      } : null,
+    };
+
+    return { user: safeUser, token };
   }
 
   static async login(input: LoginInput) {
@@ -145,6 +162,7 @@ export class AuthService {
             businessName: true,
             slug: true,
             status: true,
+            accountStatus: true,
           },
         },
       },
@@ -165,6 +183,21 @@ export class AuthService {
 
     if (user.status === 'INACTIVE') {
       throw AppError.unauthorized('Your account is currently inactive.');
+    }
+
+    if (user.role === 'VENDOR') {
+      const vendor = user.vendor || (await prisma.vendor.findUnique({ where: { userId: user.id } }));
+      if (vendor) {
+        if (vendor.status === 'PENDING') {
+          throw AppError.forbidden('Your vendor application is currently PENDING approval by an Administrator. Please wait for Super Admin review.');
+        }
+        if (vendor.status === 'REJECTED') {
+          throw AppError.forbidden('Your vendor application has been REJECTED by an Administrator. Please contact administrator support.');
+        }
+        if (vendor.accountStatus === 'SUSPENDED') {
+          throw AppError.forbidden('Your vendor storefront has been suspended. Please contact administrator support.');
+        }
+      }
     }
 
     const token = signToken({

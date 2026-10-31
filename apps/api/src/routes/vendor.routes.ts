@@ -23,6 +23,7 @@ router.put(
   '/me',
   authenticate,
   requireRole('VENDOR'),
+  requireVendor,
   validate(updateVendorProfileSchema),
   VendorController.updateMyProfile
 );

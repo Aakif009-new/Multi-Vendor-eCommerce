@@ -46,6 +46,12 @@ router.patch(
   '/:id/status',
   authenticate,
   requireRole('VENDOR', 'ADMIN'),
+  (req, res, next) => {
+    if ((req as any).user?.role === 'VENDOR') {
+      return requireVendor(req as any, res, next);
+    }
+    next();
+  },
   ProductController.toggleStatus
 );
 

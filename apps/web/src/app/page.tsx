@@ -63,6 +63,16 @@ import {
   OrderItem,
 } from '@/types/marketplace';
 
+// Constant flagship curated product displayed uniformly on the hero showcase banner
+const COMMON_HERO_SHOWCASE = {
+  name: 'AuraSound Pro Active Noise Cancelling Headphones',
+  vendorName: 'Apex Electronics',
+  rating: 4.9,
+  price: 21499,
+  discountPrice: 17499,
+  imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80',
+};
+
 export default function RootMarketplacePage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading, logout, refreshUser } = useAuth();
@@ -281,6 +291,11 @@ export default function RootMarketplacePage() {
       </div>
     );
   }
+
+  // Canonical flagship product showcase for the hero banner (fixed common product across all customer views)
+  const heroShowcaseProduct = products.find(
+    (p) => p.slug === 'aurasound-pro-active-noise-cancelling-headphones' || p.name.includes('AuraSound')
+  ) || null;
 
   // Filter & Search Logic (For Customer View)
   const filteredProducts = products.filter((product) => {
@@ -718,36 +733,45 @@ export default function RootMarketplacePage() {
                 {/* Right Hero Editorial Visual Composition */}
                 <div className="hidden lg:flex lg:col-span-5 justify-end">
                   <div className="relative w-full max-w-sm">
-                    {/* Floating Product Highlight Card */}
-                    <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl space-y-3 text-left">
+                    {/* Floating Product Highlight Card - Common Curated Flagship Product */}
+                    <div
+                      onClick={() => {
+                        if (heroShowcaseProduct) {
+                          setSelectedProduct(heroShowcaseProduct);
+                        }
+                      }}
+                      className={`p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl space-y-3 text-left transition-all ${
+                        heroShowcaseProduct ? 'cursor-pointer hover:bg-white/15 hover:border-white/30 hover:scale-[1.01]' : ''
+                      }`}
+                    >
                       <div className="aspect-4/3 w-full rounded-xl overflow-hidden bg-surface-800 relative">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={
-                            products[0]?.images?.[0] ||
-                            'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=800&q=80'
+                            heroShowcaseProduct?.images?.[0] ||
+                            COMMON_HERO_SHOWCASE.imageUrl
                           }
-                          alt="Curated Collection"
+                          alt={heroShowcaseProduct?.name || COMMON_HERO_SHOWCASE.name}
                           className="h-full w-full object-cover"
                         />
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-surface-950/80 text-[10px] font-bold text-white">
+                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-surface-950/80 text-[10px] font-bold text-white tracking-wide">
                           Staff Pick
                         </div>
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-[11px] font-semibold text-surface-300">
-                            {products[0]?.vendor?.businessName || 'Apex Electronics'}
+                            {heroShowcaseProduct?.vendor?.businessName || COMMON_HERO_SHOWCASE.vendorName}
                           </span>
                           <span className="flex items-center gap-1 text-amber-400 font-bold text-[11px]">
-                            <Star className="h-3 w-3 fill-amber-400" /> 4.9
+                            <Star className="h-3 w-3 fill-amber-400" /> {COMMON_HERO_SHOWCASE.rating}
                           </span>
                         </div>
                         <h4 className="text-xs font-bold text-white truncate">
-                          {products[0]?.name || 'Curated Sound Gear & Tech'}
+                          {heroShowcaseProduct?.name || COMMON_HERO_SHOWCASE.name}
                         </h4>
                         <div className="text-sm font-black text-white">
-                          ₹{(products[0]?.discountPrice ?? products[0]?.price ?? 4999).toLocaleString('en-IN')}
+                          ₹{(heroShowcaseProduct?.discountPrice ?? heroShowcaseProduct?.price ?? COMMON_HERO_SHOWCASE.discountPrice).toLocaleString('en-IN')}
                         </div>
                       </div>
                     </div>

@@ -392,7 +392,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           }}
           rightIcon={<ArrowRight className="h-4 w-4" />}
         >
-          {isVendor ? 'Continue to Vendor Portal' : 'Continue to Marketplace'}
+          {isVendor ? 'View Application Status' : 'Continue to Marketplace'}
         </Button>
       </div>
     );

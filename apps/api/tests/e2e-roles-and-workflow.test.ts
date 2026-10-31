@@ -193,6 +193,25 @@ describe('End-to-End Functional & Security Audit: Customer, Vendor, and Super Ad
       expect(dbUser?.vendorApplications.length).toBeGreaterThan(0);
       vendorApplicationId = dbUser!.vendorApplications[0].id;
       vendorId = dbUser!.vendor!.id;
+      vendorToken = res.body.data.token;
+    });
+
+    it("Step 2.1b: Pending Vendor CANNOT log in before Super Admin approval (403 Forbidden)", async () => {
+      const loginRes = await request(app).post("/api/auth/login").send({
+        email: vendorEmail,
+        password: vendorPassword,
+      });
+      expect(loginRes.status).toBe(403);
+      expect(loginRes.body.success).toBe(false);
+      expect(loginRes.body.message).toContain("PENDING approval");
+    });
+
+    it("Step 2.1c: Pending Vendor CANNOT manage products or stats (403 Forbidden)", async () => {
+      const statsRes = await request(app)
+        .get("/api/vendors/me/stats")
+        .set("Authorization", "Bearer " + vendorToken);
+      expect(statsRes.status).toBe(403);
+      expect(statsRes.body.message).toContain("PENDING approval");
     });
 
     it('Step 2.2: Super Admin logs in and retrieves pending applications', async () => {
